@@ -1,0 +1,20 @@
+.top-bg-wrapper {
+  background: url("../assets/flight_cloud.jpg") center top no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.top-bg-wrapper > * {
+  position: relative;
+  z-index: 2;
+}
+
+.trust-badge-trigger {
+  position: relative;
+  z-index: 2;
+  background: #fff;
+}
