@@ -1,4 +1,4 @@
-# InventTama Full-Stack Project
+# Onwardvisa Full-Stack Project
 
 Frontend: Vite + React
 Backend: Node.js + Express
