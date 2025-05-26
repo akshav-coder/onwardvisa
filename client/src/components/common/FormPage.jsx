@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Flight, Hotel, SyncAlt } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -9,6 +8,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Flight, Hotel, SyncAlt } from "@mui/icons-material";
 import { keyframes } from "@emotion/react";
 import { useSubmitTicketFormMutation } from "../../services/apiSlice";
 import flightImage from "../../assets/flight.png";
@@ -17,47 +17,39 @@ import flightImage from "../../assets/flight.png";
 const animationDuration = "3s";
 
 const fadeOut = keyframes`
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+  from { opacity: 1; }
+  to { opacity: 0; }
 `;
 
-// Keyframe for B: Sliding up AND Fading out AND changing z-index (linear motion for slide/fade)
 const slideFadeOutB = keyframes`
   0% {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
     z-index: 2;
   }
-  20% {
-    z-index: 4;
-  }
+  20% { z-index: 4; }
   50% {
-   opacity: 1;
-    transform: translateX(-50%) translateY(-350px); /* Increased negative value to go higher */
+    opacity: 1;
+    transform: translateX(-50%) translateY(-350px);
     z-index: 4;
   }
   100% {
     opacity: 1;
-    transform: translateX(-50%) translateY(-600px); /* Increased negative value to go much higher/out of view */
+    transform: translateX(-50%) translateY(-600px);
     z-index: 4;
   }
 `;
 
-// IMPORTANT CHANGE HERE: Adjusted 'to' translateY for Box C
 const slideInC = keyframes`
   from {
     transform: translateX(-50%) translateY(0);
   }
   to {
-    transform: translateX(-50%) translateY(-1000px); /* C moves up by 1000px to reach the top (0px) from its new initial top */
+    transform: translateX(-50%) translateY(-1000px);
   }
 `;
-// --- End Animation Keyframes ---
 
+// --- Button Styles ---
 const buttonStyles = {
   backgroundColor: "white",
   color: "#3B3B3B",
@@ -66,10 +58,18 @@ const buttonStyles = {
   px: 8,
 };
 
+// --- Main Component ---
 const FormPage = () => {
   const [bookingType, setBookingType] = useState("flight");
   const [tripType, setTripType] = useState("roundtrip");
   const [tabIndex, setTabIndex] = useState(0);
+  const [animationActive, setAnimationActive] = useState(false);
+  const [cFinalTransform, setCFinalTransform] = useState(
+    "translateX(-50%) translateY(0)"
+  );
+  const [typedText, setTypedText] = useState("");
+  const fullText = "Minutes";
+
   const [formData, setFormData] = useState({
     from: "",
     to: "",
@@ -81,25 +81,14 @@ const FormPage = () => {
     destinationCountry: "",
   });
 
-  const [animationActive, setAnimationActive] = useState(false);
-  // IMPORTANT CHANGE HERE: Adjusted default and final cFinalTransform
-  const [cFinalTransform, setCFinalTransform] = useState(
-    "translateX(-50%) translateY(0)"
-  );
-
-  const [typedText, setTypedText] = useState("");
-  const fullText = "Minutes";
-
   const [submitTicketForm, { isLoading }] = useSubmitTicketFormMutation();
 
-  const handleBookingType = (type) => {
-    setBookingType(type);
-  };
+  const handleBookingType = (type) => setBookingType(type);
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
-    const tabToTripType = ["roundtrip", "oneway", "multicity"];
-    setTripType(tabToTripType[newValue]);
+    const types = ["roundtrip", "oneway", "multicity"];
+    setTripType(types[newValue]);
   };
 
   const handleChange = (e) => {
@@ -122,11 +111,7 @@ const FormPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...formData,
-      type: bookingType,
-      tripType,
-    };
+    const payload = { ...formData, type: bookingType, tripType };
     try {
       const pdfBlob = await submitTicketForm(payload).unwrap();
       const url = window.URL.createObjectURL(pdfBlob);
@@ -142,11 +127,23 @@ const FormPage = () => {
     }
   };
 
+  const handleAnimationStart = () => {
+    if (!animationActive) {
+      setAnimationActive(true);
+      setCFinalTransform("translateX(-50%) translateY(0)");
+
+      setTimeout(() => {
+        setAnimationActive(false);
+        setCFinalTransform("translateX(-50%) translateY(-1000px)");
+      }, parseFloat(animationDuration) * 1000);
+    }
+  };
+
   useEffect(() => {
     let current = 0;
     let forward = true;
     let timeout;
-    function type() {
+    const type = () => {
       if (forward) {
         setTypedText(fullText.slice(0, current + 1));
         if (current < fullText.length - 1) {
@@ -166,24 +163,10 @@ const FormPage = () => {
           timeout = setTimeout(type, 400);
         }
       }
-    }
+    };
     type();
     return () => clearTimeout(timeout);
   }, []);
-
-  const handleAnimationStart = () => {
-    if (!animationActive) {
-      setAnimationActive(true);
-      // Reset C's transform to initial state right before animation starts
-      setCFinalTransform("translateX(-50%) translateY(0)");
-
-      setTimeout(() => {
-        setAnimationActive(false);
-        // IMPORTANT CHANGE HERE: Adjusted C's final transform to match new slide distance
-        setCFinalTransform("translateX(-50%) translateY(-1000px)");
-      }, parseFloat(animationDuration) * 1000);
-    }
-  };
 
   return (
     <Box>
@@ -191,14 +174,14 @@ const FormPage = () => {
         sx={{
           position: "relative",
           width: "100%",
-          height: "1200px", // Main container height remains appropriate
+          height: "1200px",
           mx: "auto",
           overflow: "hidden",
         }}
       >
-        {/* Box A: Project Title box */}
-        {animationActive ||
-        cFinalTransform === "translateX(-50%) translateY(0)" ? (
+        {/* Box A */}
+        {(animationActive ||
+          cFinalTransform === "translateX(-50%) translateY(0)") && (
           <Box
             sx={{
               mt: 15,
@@ -208,8 +191,8 @@ const FormPage = () => {
               textAlign: "center",
               position: "absolute",
               width: "100%",
-              top: "0px",
-              left: "0",
+              top: 0,
+              left: 0,
               transform: "translateX(0)",
               zIndex: 3,
               animation: animationActive
@@ -239,7 +222,6 @@ const FormPage = () => {
             <Typography sx={{ fontSize: "16px", fontWeight: 500, mb: 3 }}>
               visa cover letters — trusted by 20,000+ travelers worldwide.
             </Typography>
-
             <Button
               variant="contained"
               size="large"
@@ -248,11 +230,11 @@ const FormPage = () => {
               Get My Travel Docs
             </Button>
           </Box>
-        ) : null}
+        )}
 
-        {/* Box B: flight png */}
-        {animationActive ||
-        cFinalTransform === "translateX(-50%) translateY(0)" ? (
+        {/* Box B */}
+        {(animationActive ||
+          cFinalTransform === "translateX(-50%) translateY(0)") && (
           <Box
             sx={{
               background: `url(${flightImage}) center top no-repeat`,
@@ -260,18 +242,18 @@ const FormPage = () => {
               width: "280px",
               height: "330px",
               position: "absolute",
-              top: "450px", // Position below Project Title
+              top: "450px",
               left: "50%",
-              transform: "translateX(-50%)", // Ensure initial centering
+              transform: "translateX(-50%)",
               zIndex: 2,
               animation: animationActive
                 ? `${slideFadeOutB} ${animationDuration} forwards linear`
                 : "none",
             }}
-          ></Box>
-        ) : null}
+          />
+        )}
 
-        {/* Box C: ticket form */}
+        {/* Box C */}
         <Box
           sx={{
             p: { xs: 1, sm: 2, md: 3 },
@@ -280,101 +262,58 @@ const FormPage = () => {
             width: "100%",
             maxWidth: 1200,
             borderRadius: 2,
-
             position: "absolute",
-            // IMPORTANT CHANGE HERE: Set initial top much lower to guarantee off-screen
             top: "1300px",
             left: "50%",
             animation: animationActive
               ? `${slideInC} ${animationDuration} forwards linear`
               : "none",
-            transform: cFinalTransform, // Apply the current C transform (initial or final)
+            transform: cFinalTransform,
             zIndex: 1,
           }}
         >
-          {/* ... (rest of your form content) ... */}
+          {/* Booking Type Buttons */}
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button
-              variant="contained"
-              disableElevation
-              sx={{
-                ...buttonStyles,
-                px: { xs: 2, sm: 8 },
-                width: { xs: "100%", sm: "auto" },
-                mb: { xs: 1, sm: 0 },
-                backgroundColor:
-                  bookingType === "flight"
-                    ? "#AEBEFF"
-                    : buttonStyles.backgroundColor,
-                color:
-                  bookingType === "flight" ? "#0052cc" : buttonStyles.color,
-                "&:hover": {
-                  color: "#0052cc",
+            {["flight", "hotel", "both"].map((type) => (
+              <Button
+                key={type}
+                variant="contained"
+                disableElevation
+                sx={{
+                  ...buttonStyles,
+                  px: { xs: 2, sm: 8 },
+                  width: { xs: "100%", sm: "auto" },
+                  mb: { xs: 1, sm: 0 },
                   backgroundColor:
-                    bookingType === "flight"
+                    bookingType === type
                       ? "#AEBEFF"
                       : buttonStyles.backgroundColor,
-                },
-              }}
-              startIcon={<Flight />}
-              onClick={() => handleBookingType("flight")}
-            >
-              Flight
-            </Button>
-            <Button
-              variant="contained"
-              disableElevation
-              sx={{
-                ...buttonStyles,
-                px: { xs: 2, sm: 8 },
-                width: { xs: "100%", sm: "auto" },
-                mb: { xs: 1, sm: 0 },
-                backgroundColor:
-                  bookingType === "hotel"
-                    ? "#AEBEFF"
-                    : buttonStyles.backgroundColor,
-                color: bookingType === "hotel" ? "#0052cc" : buttonStyles.color,
-                "&:hover": {
-                  color: "#0052cc",
-                  backgroundColor:
-                    bookingType === "hotel"
-                      ? "#AEBEFF"
-                      : buttonStyles.backgroundColor,
-                },
-              }}
-              startIcon={<Hotel />}
-              onClick={() => handleBookingType("hotel")}
-            >
-              Hotel
-            </Button>
-            <Button
-              variant="contained"
-              disableElevation
-              sx={{
-                ...buttonStyles,
-                px: { xs: 2, sm: 8 },
-                width: { xs: "100%", sm: "auto" },
-                mb: { xs: 1, sm: 0 },
-                backgroundColor:
-                  bookingType === "both"
-                    ? "#AEBEFF"
-                    : buttonStyles.backgroundColor,
-                color: bookingType === "both" ? "#0052cc" : buttonStyles.color,
-                "&:hover": {
-                  color: "#0052cc",
-                  backgroundColor:
-                    bookingType === "both"
-                      ? "#AEBEFF"
-                      : buttonStyles.backgroundColor,
-                },
-              }}
-              startIcon={<SyncAlt />}
-              onClick={() => handleBookingType("both")}
-            >
-              Both
-            </Button>
+                  color: bookingType === type ? "#0052cc" : buttonStyles.color,
+                  "&:hover": {
+                    color: "#0052cc",
+                    backgroundColor:
+                      bookingType === type
+                        ? "#AEBEFF"
+                        : buttonStyles.backgroundColor,
+                  },
+                }}
+                startIcon={
+                  type === "flight" ? (
+                    <Flight />
+                  ) : type === "hotel" ? (
+                    <Hotel />
+                  ) : (
+                    <SyncAlt />
+                  )
+                }
+                onClick={() => handleBookingType(type)}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Button>
+            ))}
           </Stack>
 
+          {/* Form Content */}
           <Box
             sx={{
               backgroundColor: "white",
@@ -388,24 +327,23 @@ const FormPage = () => {
           >
             <form onSubmit={handleSubmit}>
               {(bookingType === "flight" || bookingType === "both") && (
-                <Tabs
-                  value={tabIndex}
-                  onChange={handleTabChange}
-                  sx={{ mb: 2 }}
-                  variant="scrollable"
-                  scrollButtons="auto"
-                >
-                  <Tab label="Round Trip" />
-                  <Tab label="One Way" />
-                  <Tab label="Multi City" />
-                </Tabs>
-              )}
-
-              {(bookingType === "flight" || bookingType === "both") && (
                 <>
+                  <Tabs
+                    value={tabIndex}
+                    onChange={handleTabChange}
+                    sx={{ mb: 2 }}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                  >
+                    <Tab label="Round Trip" />
+                    <Tab label="One Way" />
+                    <Tab label="Multi City" />
+                  </Tabs>
+
                   <Typography variant="h6" mt={3} gutterBottom>
                     Flight Booking
                   </Typography>
+
                   {tripType === "multicity" ? (
                     <>
                       {formData.multiCity.map((leg, i) => (
@@ -446,11 +384,7 @@ const FormPage = () => {
                           />
                         </Box>
                       ))}
-                      <Button
-                        variant="outlined"
-                        onClick={addCity}
-                        sx={{ width: { xs: "100%", sm: "auto" } }}
-                      >
+                      <Button variant="outlined" onClick={addCity}>
                         Add City
                       </Button>
                     </>
@@ -460,8 +394,8 @@ const FormPage = () => {
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                         gap: 2,
-                        alignItems: { sm: "center" },
                         mb: 2,
+                        alignItems: "center",
                       }}
                     >
                       <TextField
