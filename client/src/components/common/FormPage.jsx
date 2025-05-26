@@ -282,7 +282,7 @@ const FormPage = () => {
 
             position: "absolute",
             // IMPORTANT CHANGE HERE: Set initial top much lower to guarantee off-screen
-            top: "1200px",
+            top: "1300px",
             left: "50%",
             animation: animationActive
               ? `${slideInC} ${animationDuration} forwards linear`

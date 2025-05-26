@@ -24,7 +24,7 @@ const Header = () => {
 
   return (
     <AppBar
-      position="static"
+      position="absolute"
       sx={{
         backgroundColor: "transparent",
         boxShadow: "none",
