@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -8,13 +8,18 @@ import {
   Rating,
   useTheme,
   Chip,
+  useMediaQuery, // Import useMediaQuery
 } from "@mui/material";
 import { testimonials } from "../../utils/sampleData";
 
 const TestimonialSlider = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Check for small screens
+  const isTablet = useMediaQuery(theme.breakpoints.down("md")); // Check for medium screens
+
   const [current, setCurrent] = useState(0);
-  const slidesToShow = 3;
+  // Adjust slidesToShow based on screen size
+  const slidesToShow = isMobile ? 1 : isTablet ? 2 : 3;
   const total = testimonials.length;
 
   // Mouse drag/swipe logic
@@ -31,7 +36,9 @@ const TestimonialSlider = () => {
     if (diff > 50) {
       // Swipe right (previous)
       setCurrent((prev) =>
-        prev - slidesToShow < 0 ? total - slidesToShow : prev - slidesToShow
+        prev - slidesToShow < 0
+          ? total - (total % slidesToShow || slidesToShow)
+          : prev - slidesToShow
       );
     } else if (diff < -50) {
       // Swipe left (next)
@@ -47,19 +54,25 @@ const TestimonialSlider = () => {
     setDragStartX(null);
   };
 
-  // Only show 3 at a time
+  // Reset current index if slidesToShow changes (e.g., on screen resize)
+  useEffect(() => {
+    setCurrent(0);
+  }, [slidesToShow]);
+
+  // Only show `slidesToShow` at a time
   const visibleTestimonials = [];
   for (let i = 0; i < slidesToShow; i++) {
     visibleTestimonials.push(testimonials[(current + i) % total]);
   }
 
   return (
-    <Box sx={{ mt: 2, px: 4 }}>
+    <Box sx={{ mt: 2, px: { xs: 2, sm: 4 } }}>
+      {" "}
+      {/* Adjust horizontal padding */}
       <Chip label=" What people say about us" variant="outlined" />
       <Box
         sx={{
           maxWidth: "100%",
-
           py: 6,
           mt: 5,
           height: "100%",
@@ -84,13 +97,13 @@ const TestimonialSlider = () => {
           {visibleTestimonials.map((item, index) => (
             <Box
               key={index}
-              px={2}
+              px={{ xs: 1, sm: 2 }} // Adjust horizontal padding for individual cards
               sx={{
                 overflow: "visible",
                 height: "100%",
                 flex: `0 0 ${100 / slidesToShow}%`,
                 boxSizing: "border-box",
-                maxWidth: 540,
+                maxWidth: { xs: "100%", sm: 540 }, // Full width on small screens
                 margin: "0 auto",
               }}
             >
@@ -102,7 +115,7 @@ const TestimonialSlider = () => {
                   overflow: "visible",
                   width: "100%",
                   borderTop: `4px solid ${theme.palette.primary.main}`,
-                  p: 0, // remove default padding so border touches edges
+                  p: 0,
                 }}
               >
                 <CardContent sx={{ textAlign: "center", pt: 4, px: 3 }}>
