@@ -81,25 +81,40 @@ const FormPage = () => {
     destinationCountry: "",
   });
 
+  const [errors, setErrors] = useState({}); // New state for validation errors
+
   const [submitTicketForm, { isLoading }] = useSubmitTicketFormMutation();
 
-  const handleBookingType = (type) => setBookingType(type);
+  const handleBookingType = (type) => {
+    setBookingType(type);
+    setErrors({}); // Clear errors when booking type changes
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
     const types = ["roundtrip", "oneway", "multicity"];
     setTripType(types[newValue]);
+    setErrors({}); // Clear errors when trip type changes
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear the error for the specific field as the user types
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleMultiCityChange = (index, field, value) => {
     const updated = [...formData.multiCity];
     updated[index][field] = value;
     setFormData((prev) => ({ ...prev, multiCity: updated }));
+    // Clear errors for multi-city fields
+    setErrors((prev) => ({
+      ...prev,
+      [`multiCity[${index}].${field}`]: "",
+    }));
   };
 
   const addCity = () => {
@@ -109,21 +124,86 @@ const FormPage = () => {
     }));
   };
 
+  // --- Validation Logic ---
+  const validateForm = () => {
+    let newErrors = {};
+    let isValid = true;
+
+    if (bookingType === "flight" || bookingType === "both") {
+      if (tripType === "multicity") {
+        formData.multiCity.forEach((leg, index) => {
+          if (!leg.from) {
+            newErrors[`multiCity[${index}].from`] = "From is required";
+            isValid = false;
+          }
+          if (!leg.to) {
+            newErrors[`multiCity[${index}].to`] = "To is required";
+            isValid = false;
+          }
+          if (!leg.date) {
+            newErrors[`multiCity[${index}].date`] = "Date is required";
+            isValid = false;
+          }
+        });
+      } else {
+        if (!formData.from) {
+          newErrors.from = "From is required";
+          isValid = false;
+        }
+        if (!formData.to) {
+          newErrors.to = "To is required";
+          isValid = false;
+        }
+        if (!formData.departureDate) {
+          newErrors.departureDate = "Departure Date is required";
+          isValid = false;
+        }
+        if (tripType === "roundtrip" && !formData.returnDate) {
+          newErrors.returnDate = "Return Date is required";
+          isValid = false;
+        }
+        if (formData.travelers < 1) {
+          newErrors.travelers = "Number of travelers must be at least 1";
+          isValid = false;
+        }
+      }
+    }
+
+    if (bookingType === "hotel" || bookingType === "both") {
+      if (!formData.hotelName) {
+        newErrors.hotelName = "Hotel Name is required";
+        isValid = false;
+      }
+      if (!formData.destinationCountry) {
+        newErrors.destinationCountry = "Destination Country is required";
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { ...formData, type: bookingType, tripType };
-    try {
-      const pdfBlob = await submitTicketForm(payload).unwrap();
-      const url = window.URL.createObjectURL(pdfBlob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "ticket.pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      alert("Booking submission failed. Please try again.");
+    if (validateForm()) {
+      const payload = { ...formData, type: bookingType, tripType };
+      try {
+        const pdfBlob = await submitTicketForm(payload).unwrap();
+        const url = window.URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ticket.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        alert("Booking submitted successfully!"); // Success message
+      } catch (error) {
+        alert("Booking submission failed. Please try again.");
+      }
+    } else {
+      console.log("Form has validation errors.");
     }
   };
 
@@ -363,6 +443,8 @@ const FormPage = () => {
                               handleMultiCityChange(i, "from", e.target.value)
                             }
                             fullWidth
+                            error={!!errors[`multiCity[${i}].from`]}
+                            helperText={errors[`multiCity[${i}].from`]}
                           />
                           <TextField
                             label="To"
@@ -371,6 +453,8 @@ const FormPage = () => {
                               handleMultiCityChange(i, "to", e.target.value)
                             }
                             fullWidth
+                            error={!!errors[`multiCity[${i}].to`]}
+                            helperText={errors[`multiCity[${i}].to`]}
                           />
                           <TextField
                             type="date"
@@ -381,6 +465,8 @@ const FormPage = () => {
                               handleMultiCityChange(i, "date", e.target.value)
                             }
                             fullWidth
+                            error={!!errors[`multiCity[${i}].date`]}
+                            helperText={errors[`multiCity[${i}].date`]}
                           />
                         </Box>
                       ))}
@@ -404,6 +490,8 @@ const FormPage = () => {
                         value={formData.from}
                         onChange={handleChange}
                         fullWidth
+                        error={!!errors.from}
+                        helperText={errors.from}
                       />
                       <TextField
                         label="To"
@@ -411,6 +499,8 @@ const FormPage = () => {
                         value={formData.to}
                         onChange={handleChange}
                         fullWidth
+                        error={!!errors.to}
+                        helperText={errors.to}
                       />
                       <TextField
                         label="Departure Date"
@@ -420,6 +510,8 @@ const FormPage = () => {
                         value={formData.departureDate}
                         onChange={handleChange}
                         fullWidth
+                        error={!!errors.departureDate}
+                        helperText={errors.departureDate}
                       />
                       {tripType === "roundtrip" && (
                         <TextField
@@ -430,6 +522,8 @@ const FormPage = () => {
                           value={formData.returnDate}
                           onChange={handleChange}
                           fullWidth
+                          error={!!errors.returnDate}
+                          helperText={errors.returnDate}
                         />
                       )}
                       <TextField
@@ -440,6 +534,8 @@ const FormPage = () => {
                         onChange={handleChange}
                         inputProps={{ min: 1 }}
                         fullWidth
+                        error={!!errors.travelers}
+                        helperText={errors.travelers}
                       />
                     </Box>
                   )}
@@ -466,6 +562,8 @@ const FormPage = () => {
                       value={formData.hotelName}
                       onChange={handleChange}
                       fullWidth
+                      error={!!errors.hotelName}
+                      helperText={errors.hotelName}
                     />
                     <TextField
                       label="Destination Country"
@@ -473,6 +571,8 @@ const FormPage = () => {
                       value={formData.destinationCountry}
                       onChange={handleChange}
                       fullWidth
+                      error={!!errors.destinationCountry}
+                      helperText={errors.destinationCountry}
                     />
                   </Box>
                 </>
@@ -500,8 +600,9 @@ const FormPage = () => {
                   }}
                   color="primary"
                   size="large"
+                  disabled={isLoading} // Disable button while submitting
                 >
-                  Continue to checkout
+                  {isLoading ? "Submitting..." : "Continue to checkout"}
                 </Button>
               </Box>
             </form>
