@@ -1,14 +1,16 @@
+import React, { useState } from "react";
 import {
   AppBar,
   Box,
   Button,
-  Container,
+  // Container, // Not used in this component, removed for cleaner code
   Toolbar,
   Typography,
+  IconButton,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import React, { useState } from "react";
 import { AirplaneTicket, Menu as MenuIcon } from "@mui/icons-material";
-import { Menu, MenuItem, IconButton } from "@mui/material";
 
 const Header = () => {
   const pages = ["Home", "Blogs", "How It Works", "Contact Us"];
@@ -28,40 +30,91 @@ const Header = () => {
       sx={{
         backgroundColor: "transparent",
         boxShadow: "none",
+        width: "100%",
+        px: { xs: 2, md: 4 },
       }}
     >
-      <Toolbar>
-        <AirplaneTicket sx={{ mr: 1 }} />
-        <Typography
-          variant="h6"
-          noWrap
-          component="a"
-          href="#app-bar-with-responsive-menu"
+      <Toolbar
+        disableGutters
+        sx={{ justifyContent: "space-between", alignItems: "center" }}
+      >
+        {/* Logo and Title Section (Left aligned) */}
+        <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {" "}
+          {/* flexShrink: 0 to prevent shrinking */}
+          <AirplaneTicket sx={{ mr: 1, color: "white" }} />
+          <Typography
+            variant="h6"
+            noWrap
+            component="a"
+            href="#app-bar-with-responsive-menu"
+            sx={{
+              mr: 2,
+              fontFamily: "monospace",
+              fontWeight: 700,
+              letterSpacing: ".1rem",
+              color: "white",
+              textDecoration: "none",
+            }}
+          >
+            ONWARDVISAS
+          </Typography>
+        </Box>
+
+        {/* Desktop Menu (Centered) */}
+        <Box
           sx={{
-            mr: 2,
-            flexGrow: 1,
-            fontFamily: "monospace",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
-            color: "white",
-            textDecoration: "none",
+            flexGrow: 1, // Allows this box to take available space
+            display: { xs: "none", md: "flex" },
+            justifyContent: "center", // Centers the items horizontally within this box
+            alignItems: "center", // Ensures items are vertically centered
           }}
         >
-          ONWARDVISAS
-        </Typography>
-        {/* Mobile menu icon */}
-        <Button
-          variant="outlined"
-          size="small"
-          sx={{
-            color: "white",
-            borderColor: "white",
-            display: { xs: "flex", md: "none" },
-          }}
-        >
-          SIGN IN
-        </Button>
-        <Box sx={{ display: { xs: "flex", md: "none" } }}>
+          {pages.map((page) => (
+            <Button
+              key={page}
+              sx={{
+                my: 2,
+                color: "white",
+                display: "block",
+                mx: 2, // Horizontal margin between navigation items
+              }}
+            >
+              {page}
+            </Button>
+          ))}
+        </Box>
+
+        {/* Sign In Button (Right aligned for desktop) */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, flexShrink: 0 }}>
+          {" "}
+          {/* flexShrink: 0 to prevent shrinking */}
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{
+              color: "white",
+              borderColor: "white",
+              ml: 3, // Left margin to separate from the centered menu
+            }}
+          >
+            SIGN IN
+          </Button>
+        </Box>
+
+        {/* Mobile menu (icon and button - remains on the right) */}
+        <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center" }}>
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{
+              color: "white",
+              borderColor: "white",
+              mr: 1,
+            }}
+          >
+            SIGN IN
+          </Button>
           <IconButton
             size="large"
             aria-label="menu"
@@ -91,25 +144,6 @@ const Header = () => {
             ))}
           </Menu>
         </Box>
-        {/* Desktop menu */}
-        <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-          {pages.map((page) => (
-            <Button key={page} sx={{ my: 2, display: "block", color: "white" }}>
-              {page}
-            </Button>
-          ))}
-        </Box>
-        <Button
-          variant="outlined"
-          size="small"
-          sx={{
-            color: "white",
-            borderColor: "white",
-            display: { xs: "none", md: "flex" },
-          }}
-        >
-          SIGN IN
-        </Button>
       </Toolbar>
     </AppBar>
   );
