@@ -1,8 +1,8 @@
 .top-bg-wrapper {
-  background: url("../assets/flight_cloud.jpg") center top no-repeat;
+  background: url("../assets/clouds.png") center top no-repeat;
   background-size: cover;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   position: relative;
   z-index: 1;
 }

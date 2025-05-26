@@ -19,11 +19,11 @@ const MainPage = () => {
         <FormPage />
       </div>
       <TrustBadge />
-      {/* <HowItWorks />
+      <HowItWorks />
       <OnwardVisasFeatures />
       <TestimonialSlider />
       <VisaHelpCards />
-      <Footer /> */}
+      <Footer />
       {/* <SampleUI /> */}
     </div>
   );
