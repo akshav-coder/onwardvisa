@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import { keyframes } from "@emotion/react";
-import { useSubmitFormMutation } from "../../services/authApi";
+import { useSubmitTicketFormMutation } from "../../services/apiSlice";
 import flightImage from "../../assets/flight.png";
 
 // --- Animation Keyframes ---
@@ -90,7 +90,7 @@ const FormPage = () => {
   const [typedText, setTypedText] = useState("");
   const fullText = "Minutes";
 
-  const [submitForm, { isLoading }] = useSubmitFormMutation();
+  const [submitTicketForm, { isLoading }] = useSubmitTicketFormMutation();
 
   const handleBookingType = (type) => {
     setBookingType(type);
@@ -122,21 +122,22 @@ const FormPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting form with data:");
     const payload = {
       ...formData,
       type: bookingType,
       tripType,
     };
-    console.log("Submitting: ", payload);
-    alert("Booking submitted successfully!");
-
     try {
-      const response = await submitForm(payload).unwrap();
-      console.log("Form submitted successfully:", response);
-      alert("Booking submitted successfully!");
+      const pdfBlob = await submitTicketForm(payload).unwrap();
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ticket.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Submission failed:", error);
       alert("Booking submission failed. Please try again.");
     }
   };

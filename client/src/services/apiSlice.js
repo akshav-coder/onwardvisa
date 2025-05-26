@@ -13,5 +13,16 @@ export const apiSlice = createApi({
     },
   }),
   tagTypes: [],
-  endpoints: () => ({}),
+  endpoints: (builder) => ({
+    submitTicketForm: builder.mutation({
+      query: (formData) => ({
+        url: "/tickets/submit",
+        method: "POST",
+        body: formData,
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+  }),
 });
+
+export const { useSubmitTicketFormMutation } = apiSlice;
