@@ -4,6 +4,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
+const amadeusRoutes = require("./routes/amadeusRoutes");
 
 dotenv.config();
 connectDB();
@@ -16,6 +17,8 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
+
+app.use("/api/amadeus", amadeusRoutes);
 
 app.get("/", (req, res) => {
   res.send("Tamarind Tracker API is running...");

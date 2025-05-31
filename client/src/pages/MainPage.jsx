@@ -10,6 +10,7 @@ import flight_cloud from "../assets/flight_cloud.jpg";
 import "../styles/MainPage.css";
 import FormPage from "../components/common/FormPage";
 import SampleUI from "../components/common/SampleUI";
+import HotelSearch from "../components/common/HotelSearch";
 
 const MainPage = () => {
   return (
@@ -25,6 +26,7 @@ const MainPage = () => {
       <VisaHelpCards />
       <Footer />
       {/* <SampleUI /> */}
+      <HotelSearch />
     </div>
   );
 };
