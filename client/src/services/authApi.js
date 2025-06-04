@@ -48,6 +48,15 @@ export const authApi = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+
+    // 🤖 Auto book hotel
+    autoBookHotel: builder.mutation({
+      query: ({ place, adults, checkInDate, checkOutDate }) => ({
+        url: "/amadeus/auto-book",
+        method: "POST",
+        body: { place, adults, checkInDate, checkOutDate },
+      }),
+    }),
   }),
 });
 
@@ -59,4 +68,5 @@ export const {
   useGetOffersQuery,
   useConfirmOfferQuery,
   useBookHotelMutation,
+  useAutoBookHotelMutation,
 } = authApi;

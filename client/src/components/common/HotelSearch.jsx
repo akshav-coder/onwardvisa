@@ -17,6 +17,7 @@ import {
   useGetOffersQuery,
   useConfirmOfferQuery,
   useBookHotelMutation,
+  useAutoBookHotelMutation,
 } from "../../services/authApi";
 
 const HotelSearch = () => {
@@ -225,4 +226,112 @@ const HotelSearch = () => {
   );
 };
 
-export default HotelSearch;
+// --- New Auto Book Section ---
+const AutoBookHotel = () => {
+  const [cityInput, setCityInput] = useState("");
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [checkInDate, setCheckInDate] = useState("");
+  const [checkOutDate, setCheckOutDate] = useState("");
+  const [adults, setAdults] = useState(1);
+  const [autoBookHotel, { isLoading, data, error }] =
+    useAutoBookHotelMutation();
+
+  const { data: cityData } = useSearchCityQuery(cityInput, {
+    skip: !cityInput,
+  });
+  const cityOptions =
+    cityData?.data?.map((item) => ({
+      label: item.address.cityName,
+      code: item.address.cityCode,
+    })) || [];
+
+  const handleAutoBook = async () => {
+    if (!selectedCity || !checkInDate || !checkOutDate) return;
+    await autoBookHotel({
+      place: selectedCity.code,
+      adults,
+      checkInDate,
+      checkOutDate,
+    });
+  };
+
+  return (
+    <Box
+      sx={{
+        maxWidth: 600,
+        mx: "auto",
+        p: 3,
+        mt: 6,
+        border: "1px solid #eee",
+        borderRadius: 2,
+      }}
+    >
+      <Typography variant="h6" gutterBottom>
+        Auto Book Hotel (One Click)
+      </Typography>
+      <Autocomplete
+        options={cityOptions}
+        onInputChange={(e, val) => setCityInput(val)}
+        onChange={(e, val) => setSelectedCity(val)}
+        renderInput={(params) => (
+          <TextField {...params} label="City" fullWidth margin="normal" />
+        )}
+      />
+      <TextField
+        label="Check In"
+        type="date"
+        fullWidth
+        margin="normal"
+        InputLabelProps={{ shrink: true }}
+        value={checkInDate}
+        onChange={(e) => setCheckInDate(e.target.value)}
+      />
+      <TextField
+        label="Check Out"
+        type="date"
+        fullWidth
+        margin="normal"
+        InputLabelProps={{ shrink: true }}
+        value={checkOutDate}
+        onChange={(e) => setCheckOutDate(e.target.value)}
+      />
+      <TextField
+        label="Adults"
+        type="number"
+        fullWidth
+        margin="normal"
+        value={adults}
+        onChange={(e) => setAdults(Number(e.target.value))}
+        inputProps={{ min: 1 }}
+      />
+      <Button
+        onClick={handleAutoBook}
+        variant="contained"
+        color="secondary"
+        sx={{ mt: 2 }}
+        disabled={isLoading || !selectedCity || !checkInDate || !checkOutDate}
+      >
+        {isLoading ? "Booking..." : "Auto Book Hotel"}
+      </Button>
+      {data && (
+        <Typography color="green" sx={{ mt: 2 }}>
+          Hotel booked! Booking ID: {data?.id || JSON.stringify(data)}
+        </Typography>
+      )}
+      {error && (
+        <Typography color="error" sx={{ mt: 2 }}>
+          {error?.data?.error || "Booking failed."}
+        </Typography>
+      )}
+    </Box>
+  );
+};
+
+export default function HotelSearchWrapper() {
+  return (
+    <>
+      <HotelSearch />
+      <AutoBookHotel />
+    </>
+  );
+}
