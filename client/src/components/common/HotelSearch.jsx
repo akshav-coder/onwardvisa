@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import {
   Box,
   TextField,
@@ -29,6 +30,7 @@ const HotelSearch = () => {
   const [selectedHotel, setSelectedHotel] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const showSnackbar = useSnackbar();
+  const today = dayjs().format("YYYY-MM-DD");
 
   // Search city
   const { data: cityData } = useSearchCityQuery(cityInput, {
@@ -81,6 +83,14 @@ const HotelSearch = () => {
   const [bookHotel, { isLoading: booking }] = useBookHotelMutation();
 
   const handleBook = async () => {
+    if (dayjs(checkInDate).isBefore(dayjs(), "day")) {
+      showSnackbar("Check-in cannot be in the past", "error");
+      return;
+    }
+    if (dayjs(checkOutDate).isSameOrBefore(dayjs(checkInDate), "day")) {
+      showSnackbar("Check-out must be after check-in", "error");
+      return;
+    }
     const response = await bookHotel({
       offerId: selectedOffer.id,
       data: {
@@ -129,6 +139,7 @@ const HotelSearch = () => {
         fullWidth
         margin="normal"
         InputLabelProps={{ shrink: true }}
+        inputProps={{ min: today }}
         value={checkInDate}
         onChange={(e) => setCheckInDate(e.target.value)}
       />
@@ -138,6 +149,9 @@ const HotelSearch = () => {
         fullWidth
         margin="normal"
         InputLabelProps={{ shrink: true }}
+        inputProps={{
+          min: dayjs(checkInDate || today).add(1, "day").format("YYYY-MM-DD"),
+        }}
         value={checkOutDate}
         onChange={(e) => setCheckOutDate(e.target.value)}
       />
@@ -237,6 +251,7 @@ const AutoBookHotel = () => {
   const [adults, setAdults] = useState(1);
   const [autoBookHotel, { isLoading, data, error }] =
     useAutoBookHotelMutation();
+  const today = dayjs().format("YYYY-MM-DD");
 
   const { data: cityData } = useSearchCityQuery(cityInput, {
     skip: !cityInput,
@@ -249,6 +264,12 @@ const AutoBookHotel = () => {
 
   const handleAutoBook = async () => {
     if (!selectedCity || !checkInDate || !checkOutDate) return;
+    if (dayjs(checkInDate).isBefore(dayjs(), "day")) {
+      return;
+    }
+    if (dayjs(checkOutDate).isSameOrBefore(dayjs(checkInDate), "day")) {
+      return;
+    }
     await autoBookHotel({
       place: selectedCity.code,
       adults,
@@ -285,6 +306,7 @@ const AutoBookHotel = () => {
         fullWidth
         margin="normal"
         InputLabelProps={{ shrink: true }}
+        inputProps={{ min: today }}
         value={checkInDate}
         onChange={(e) => setCheckInDate(e.target.value)}
       />
@@ -294,6 +316,9 @@ const AutoBookHotel = () => {
         fullWidth
         margin="normal"
         InputLabelProps={{ shrink: true }}
+        inputProps={{
+          min: dayjs(checkInDate || today).add(1, "day").format("YYYY-MM-DD"),
+        }}
         value={checkOutDate}
         onChange={(e) => setCheckOutDate(e.target.value)}
       />
