@@ -19,6 +19,7 @@ import {
   useBookHotelMutation,
   useAutoBookHotelMutation,
 } from "../../services/authApi";
+import { useSnackbar } from "./SnackbarProvider";
 
 const HotelSearch = () => {
   const [cityInput, setCityInput] = useState("");
@@ -27,6 +28,7 @@ const HotelSearch = () => {
   const [checkOutDate, setCheckOutDate] = useState("");
   const [selectedHotel, setSelectedHotel] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const showSnackbar = useSnackbar();
 
   // Search city
   const { data: cityData } = useSearchCityQuery(cityInput, {
@@ -101,7 +103,7 @@ const HotelSearch = () => {
       },
     });
     console.log("Booking response:", response);
-    alert("Hotel booked successfully!");
+    showSnackbar("Hotel booked successfully!", "success");
   };
 
   return (

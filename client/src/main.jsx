@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { store } from "./app/store";
 import { BrowserRouter } from "react-router-dom";
 import { setCredentials } from "./features/auth/authSlice";
+import { SnackbarProvider } from "./components/common/SnackbarProvider";
 
 const userFromStorage = JSON.parse(localStorage.getItem("user"));
 
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
       <BrowserRouter>
-        <App />
+        <SnackbarProvider>
+          <App />
+        </SnackbarProvider>
       </BrowserRouter>
     </Provider>
   </React.StrictMode>
