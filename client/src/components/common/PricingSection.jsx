@@ -97,7 +97,7 @@ const PricingSection = () => {
                 <Button variant={plan.buttonColor} fullWidth sx={{ mb: 2 }}>
                   Book Now
                 </Button>
-                <List dense alignItems="flex-start" sx={{ mt: 0 }}>
+                <List dense sx={{ mt: 0 }}>
                   {plan.features.map((feature, i) => (
                     <ListItem
                       key={i}

@@ -118,6 +118,7 @@ const FlightBookingForm = ({
   errors,
   handleMultiCityChange,
   addCity,
+  today, // <-- add today as a prop
 }) => (
   <>
     <Tabs
@@ -188,7 +189,7 @@ const FlightBookingForm = ({
           flexDirection: { xs: "column", sm: "row" },
           gap: 2,
           mb: 2,
-          alignItems: "center",
+          alignItems: "flex-start",
         }}
       >
         <TextField
@@ -228,7 +229,9 @@ const FlightBookingForm = ({
             name="returnDate"
             InputLabelProps={{ shrink: true }}
             inputProps={{
-              min: dayjs(formData.departureDate).add(1, "day").format("YYYY-MM-DD"),
+              min: dayjs(formData.departureDate)
+                .add(1, "day")
+                .format("YYYY-MM-DD"),
             }}
             value={formData.returnDate}
             onChange={handleChange}
@@ -264,6 +267,7 @@ const HotelBookingForm = ({
   errors,
   setErrors,
   handleChange,
+  today, // <-- add today as a prop
 }) => (
   <>
     <Typography variant="h6" mt={4} gutterBottom>
@@ -274,7 +278,7 @@ const HotelBookingForm = ({
         display: "flex",
         flexDirection: { xs: "column", sm: "row" },
         gap: 2,
-        alignItems: { sm: "center" },
+        alignItems: { sm: "flex-start" },
         mb: 2,
       }}
     >
@@ -295,6 +299,7 @@ const HotelBookingForm = ({
             }));
           }
         }}
+        fullWidth
         getOptionLabel={(option) => option.label || ""}
         renderInput={(params) => (
           <TextField
@@ -375,7 +380,7 @@ const FormPage = () => {
       code: item.address.cityCode,
     })) || [];
 
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     from: "",
     to: "",
     departureDate: today,
@@ -387,7 +392,9 @@ const FormPage = () => {
     checkInDate: today,
     checkOutDate: "",
     adults: 1,
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const [errors, setErrors] = useState({}); // New state for validation errors
 
@@ -395,6 +402,7 @@ const FormPage = () => {
 
   const handleBookingType = (type) => {
     setBookingType(type);
+    setFormData(initialFormData); // Clear the form when booking type changes
     setErrors({}); // Clear errors when booking type changes
   };
 
@@ -452,7 +460,8 @@ const FormPage = () => {
             newErrors[`multiCity[${index}].date`] = "Date is required";
             isValid = false;
           } else if (dayjs(leg.date).isBefore(dayjs(), "day")) {
-            newErrors[`multiCity[${index}].date`] = "Date cannot be in the past";
+            newErrors[`multiCity[${index}].date`] =
+              "Date cannot be in the past";
             isValid = false;
           }
         });
@@ -724,6 +733,7 @@ const FormPage = () => {
                   errors={errors}
                   handleMultiCityChange={handleMultiCityChange}
                   addCity={addCity}
+                  today={today} // <-- pass today as a prop
                 />
               )}
               {(bookingType === "hotel" || bookingType === "both") && (
@@ -737,6 +747,7 @@ const FormPage = () => {
                   errors={errors}
                   setErrors={setErrors}
                   handleChange={handleChange}
+                  today={today} // <-- pass today as a prop
                 />
               )}
               <Box
