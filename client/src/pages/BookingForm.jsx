@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import dayjs from "dayjs";
 import "./BookingForm.css";
 import { useSubmitFormMutation } from "../services/authApi";
 import { useSnackbar } from "../hooks/useSnackbar";
@@ -6,16 +7,17 @@ import { useSnackbar } from "../hooks/useSnackbar";
 const BookingForm = () => {
   const [bookingType, setBookingType] = useState("flight");
   const [tripType, setTripType] = useState("oneway");
+  const today = dayjs().format("YYYY-MM-DD");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     // Flight Info
     from: "",
     to: "",
-    departureDate: "",
+    departureDate: today,
     returnDate: "",
     travelers: 1,
-    multiCity: [{ from: "", to: "", date: "" }],
+    multiCity: [{ from: "", to: "", date: today }],
     // Hotel Info
     hotelName: "",
     destinationCountry: "",
@@ -41,12 +43,30 @@ const BookingForm = () => {
   const addCity = () => {
     setFormData((prev) => ({
       ...prev,
-      multiCity: [...prev.multiCity, { from: "", to: "", date: "" }],
+      multiCity: [...prev.multiCity, { from: "", to: "", date: today }],
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Basic date validation
+    if (dayjs(formData.departureDate).isBefore(dayjs(), "day")) {
+      showSnackbar("Departure date cannot be in the past", "error");
+      return;
+    }
+    if (
+      tripType === "roundtrip" &&
+      dayjs(formData.returnDate).isSameOrBefore(dayjs(formData.departureDate), "day")
+    ) {
+      showSnackbar("Return date must be after departure date", "error");
+      return;
+    }
+    for (const leg of formData.multiCity) {
+      if (dayjs(leg.date).isBefore(dayjs(), "day")) {
+        showSnackbar("Multi city dates cannot be in the past", "error");
+        return;
+      }
+    }
     const payload = {
       ...formData,
       type: bookingType,
@@ -154,6 +174,7 @@ const BookingForm = () => {
                       <input
                         type="date"
                         value={leg.date}
+                        min={today}
                         onChange={(e) =>
                           handleMultiCityChange(i, "date", e.target.value)
                         }
@@ -200,6 +221,7 @@ const BookingForm = () => {
                     type="date"
                     name="departureDate"
                     value={formData.departureDate}
+                    min={today}
                     onChange={handleChange}
                   />
                 </div>
@@ -211,6 +233,7 @@ const BookingForm = () => {
                       type="date"
                       name="returnDate"
                       value={formData.returnDate}
+                      min={dayjs(formData.departureDate).add(1, "day").format("YYYY-MM-DD")}
                       onChange={handleChange}
                     />
                   </div>

@@ -18,6 +18,7 @@ import {
   useSearchCityQuery,
 } from "../../services/authApi";
 import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 
 // --- Animation Keyframes ---
 const animationDuration = "3s";
@@ -167,6 +168,7 @@ const FlightBookingForm = ({
               type="date"
               label="Date"
               InputLabelProps={{ shrink: true }}
+              inputProps={{ min: today }}
               value={leg.date}
               onChange={(e) => handleMultiCityChange(i, "date", e.target.value)}
               fullWidth
@@ -212,6 +214,7 @@ const FlightBookingForm = ({
           type="date"
           name="departureDate"
           InputLabelProps={{ shrink: true }}
+          inputProps={{ min: today }}
           value={formData.departureDate}
           onChange={handleChange}
           fullWidth
@@ -224,6 +227,9 @@ const FlightBookingForm = ({
             type="date"
             name="returnDate"
             InputLabelProps={{ shrink: true }}
+            inputProps={{
+              min: dayjs(formData.departureDate).add(1, "day").format("YYYY-MM-DD"),
+            }}
             value={formData.returnDate}
             onChange={handleChange}
             fullWidth
@@ -307,6 +313,7 @@ const HotelBookingForm = ({
         value={formData.checkInDate}
         onChange={handleChange}
         InputLabelProps={{ shrink: true }}
+        inputProps={{ min: today }}
         fullWidth
         error={!!errors.checkInDate}
         helperText={errors.checkInDate}
@@ -318,6 +325,9 @@ const HotelBookingForm = ({
         value={formData.checkOutDate}
         onChange={handleChange}
         InputLabelProps={{ shrink: true }}
+        inputProps={{
+          min: dayjs(formData.checkInDate).add(1, "day").format("YYYY-MM-DD"),
+        }}
         fullWidth
         error={!!errors.checkOutDate}
         helperText={errors.checkOutDate}
@@ -353,6 +363,7 @@ const FormPage = () => {
   const [autoBookHotel, { isAutoLoading, data, error }] =
     useAutoBookHotelMutation();
   const navigate = useNavigate();
+  const today = dayjs().format("YYYY-MM-DD");
 
   const { data: cityData } = useSearchCityQuery(cityInput, {
     skip: !cityInput,
@@ -367,13 +378,13 @@ const FormPage = () => {
   const [formData, setFormData] = useState({
     from: "",
     to: "",
-    departureDate: "",
+    departureDate: today,
     returnDate: "",
     travelers: 1,
-    multiCity: [{ from: "", to: "", date: "" }],
+    multiCity: [{ from: "", to: "", date: today }],
     hotelName: "",
     destinationCountry: "",
-    checkInDate: "",
+    checkInDate: today,
     checkOutDate: "",
     adults: 1,
   });
@@ -440,6 +451,9 @@ const FormPage = () => {
           if (!leg.date) {
             newErrors[`multiCity[${index}].date`] = "Date is required";
             isValid = false;
+          } else if (dayjs(leg.date).isBefore(dayjs(), "day")) {
+            newErrors[`multiCity[${index}].date`] = "Date cannot be in the past";
+            isValid = false;
           }
         });
       } else {
@@ -454,9 +468,21 @@ const FormPage = () => {
         if (!formData.departureDate) {
           newErrors.departureDate = "Departure Date is required";
           isValid = false;
+        } else if (dayjs(formData.departureDate).isBefore(dayjs(), "day")) {
+          newErrors.departureDate = "Departure Date cannot be in the past";
+          isValid = false;
         }
         if (tripType === "roundtrip" && !formData.returnDate) {
           newErrors.returnDate = "Return Date is required";
+          isValid = false;
+        } else if (
+          tripType === "roundtrip" &&
+          dayjs(formData.returnDate).isSameOrBefore(
+            dayjs(formData.departureDate),
+            "day"
+          )
+        ) {
+          newErrors.returnDate = "Return Date must be after Departure Date";
           isValid = false;
         }
         if (formData.travelers < 1) {
@@ -470,9 +496,20 @@ const FormPage = () => {
       if (!formData.checkInDate) {
         newErrors.checkInDate = "Check-in Date is required";
         isValid = false;
+      } else if (dayjs(formData.checkInDate).isBefore(dayjs(), "day")) {
+        newErrors.checkInDate = "Check-in cannot be in the past";
+        isValid = false;
       }
       if (!formData.checkOutDate) {
         newErrors.checkOutDate = "Check-out Date is required";
+        isValid = false;
+      } else if (
+        dayjs(formData.checkOutDate).isSameOrBefore(
+          dayjs(formData.checkInDate),
+          "day"
+        )
+      ) {
+        newErrors.checkOutDate = "Check-out must be after Check-in";
         isValid = false;
       }
       if (formData.adults < 1) {
