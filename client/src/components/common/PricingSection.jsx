@@ -36,7 +36,7 @@ const plans = [
       "Instant download + email delivery",
       "Free one-time date change included",
     ],
-    buttonColor: "contained",
+    buttonColor: "outlined",
   },
   {
     title: "Flight + Hotel Comb",

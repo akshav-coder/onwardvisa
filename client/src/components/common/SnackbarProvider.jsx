@@ -22,7 +22,7 @@ export const SnackbarProvider = ({ children }) => {
       {children}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={3000}
+        autoHideDuration={10000}
         onClose={closeSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         TransitionComponent={Slide}
