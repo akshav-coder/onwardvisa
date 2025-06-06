@@ -2,21 +2,17 @@
 const PDFDocument = require("pdfkit");
 
 function generateTicketPDF(doc, formData) {
-  doc.font("Helvetica");
-  doc.fontSize(28).fillColor("#000").text("Event Ticket", { align: "center" });
-  doc.moveDown(0.5);
+  // --- Header ---
+  doc.rect(0, 0, doc.page.width, 60).fill("#102781");
   doc
-    .fontSize(14)
-    .fillColor("#555")
-    .text("Your Gateway to an Amazing Experience", { align: "center" });
-  doc.moveDown(1.5);
-  doc
-    .strokeColor("#ccc")
-    .lineWidth(1)
-    .moveTo(doc.page.margins.left, doc.y)
-    .lineTo(doc.page.width - doc.page.margins.right, doc.y)
-    .stroke();
-  doc.moveDown(1);
+    .fillColor("#fff")
+    .fontSize(26)
+    .font("Helvetica-Bold")
+    .text("OnwardVisa Booking Confirmation", 0, 20, {
+      align: "center",
+    });
+
+  doc.moveDown(3);
   doc
     .fontSize(18)
     .fillColor("#333")
@@ -36,14 +32,23 @@ function generateTicketPDF(doc, formData) {
       doc.moveDown(0.5);
     }
   };
-  addDetail("Ticket ID", formData.ticketId || "N/A");
-  addDetail("Event Name", formData.eventName || "N/A");
-  addDetail("Customer Name", formData.customerName || "N/A");
-  addDetail("Date", formData.date || "N/A");
-  addDetail("Time", formData.time || "N/A");
-  addDetail("Location", formData.location || "N/A");
-  addDetail("Price", formData.price ? "$" + formData.price : "N/A");
-  addDetail("Seat", formData.seat || "N/A");
+  addDetail("Name", formData.fullName);
+  addDetail("Email", formData.email);
+  addDetail("Booking Type", formData.type);
+  if (formData.tripType) addDetail("Trip Type", formData.tripType);
+  addDetail("From", formData.from);
+  addDetail("To", formData.to);
+  addDetail("Departure", formData.departureDate);
+  if (formData.returnDate) addDetail("Return", formData.returnDate);
+  if (formData.travelers) addDetail("Travelers", formData.travelers);
+  if (formData.hotelName) addDetail("Hotel", formData.hotelName);
+  if (formData.destinationCountry)
+    addDetail("Destination", formData.destinationCountry);
+  if (Array.isArray(formData.multiCity) && formData.multiCity.length > 0) {
+    formData.multiCity.forEach((leg, i) => {
+      addDetail(`Leg ${i + 1}`, `${leg.from} -> ${leg.to} on ${leg.date}`);
+    });
+  }
   doc.moveDown(0.5);
   doc
     .fontSize(14)
@@ -51,14 +56,18 @@ function generateTicketPDF(doc, formData) {
     .text("Additional Details:", { align: "left" });
   doc.moveDown(0.5);
   const commonFields = [
-    "ticketId",
-    "eventName",
-    "customerName",
-    "date",
-    "time",
-    "location",
-    "price",
-    "seat",
+    "fullName",
+    "email",
+    "type",
+    "tripType",
+    "from",
+    "to",
+    "departureDate",
+    "returnDate",
+    "travelers",
+    "hotelName",
+    "destinationCountry",
+    "multiCity",
   ];
   Object.entries(formData).forEach(([key, value]) => {
     if (!commonFields.includes(key) && value) {

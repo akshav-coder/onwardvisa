@@ -38,7 +38,7 @@ const createTicket = async (req, res) => {
         }
       );
     doc.text(
-      "Thank you for choosing us!",
+      "Thank you for choosing OnwardVisa!",
       doc.page.margins.left,
       footerY + 12,
       {

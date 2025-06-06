@@ -110,11 +110,17 @@ const CheckoutPage = () => {
       if (bookingType === "hotel") {
         await autoBookHotel(payload).unwrap();
         showSnackbar("Hotel booked successfully!", "success");
-        navigate("/");
+        navigate("/thank-you", { state: { info: payload } });
       } else if (bookingType === "flight" || bookingType === "both") {
-        await submitTicketForm(payload).unwrap();
+        const blob = await submitTicketForm(payload).unwrap();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ticket.pdf";
+        a.click();
+        window.URL.revokeObjectURL(url);
         showSnackbar("Flight booked successfully!", "success");
-        navigate("/");
+        navigate("/thank-you", { state: { info: payload } });
       }
     } catch (err) {
       showSnackbar(
