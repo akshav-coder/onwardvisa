@@ -39,7 +39,8 @@ const CheckoutPage = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [autoBookHotel, { isAutoLoading }] = useAutoBookHotelMutation();
+  const [autoBookHotel, { isLoading: isAutoLoading }] =
+    useAutoBookHotelMutation();
   const [submitTicketForm, { isLoading: isFlightLoading }] =
     useSubmitTicketFormMutation();
 
