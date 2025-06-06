@@ -12,11 +12,13 @@ import {
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AddCircle, RemoveCircle } from "@mui/icons-material";
-import { useAutoBookHotelMutation } from "../../services/authApi"; // Adjust import as needed
+import { useAutoBookHotelMutation } from "../../services/authApi";
+import { useSubmitTicketFormMutation } from "../../services/apiSlice";
 
 const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const bookingType = location.state?.bookingType;
   const bookingInfo = location.state?.payload || {};
 
   const [guests, setGuests] = useState([
@@ -38,6 +40,8 @@ const CheckoutPage = () => {
 
   const [errors, setErrors] = useState({});
   const [autoBookHotel, { isAutoLoading }] = useAutoBookHotelMutation();
+  const [submitTicketForm, { isLoading: isFlightLoading }] =
+    useSubmitTicketFormMutation();
 
   const handleGuestChange = (index, e) => {
     const { name, value } = e.target;
@@ -100,11 +104,21 @@ const CheckoutPage = () => {
     };
 
     try {
-      const result = await autoBookHotel(payload).unwrap();
-      alert("Hotel booked successfully!");
-      navigate("/");
+      if (bookingType === "hotel") {
+        await autoBookHotel(payload).unwrap();
+        alert("Hotel booked successfully!");
+        navigate("/");
+      } else if (bookingType === "flight" || bookingType === "both") {
+        await submitTicketForm(payload).unwrap();
+        alert("Flight booked successfully!");
+        navigate("/");
+      }
     } catch (err) {
-      alert("Hotel booking failed.");
+      alert(
+        bookingType === "hotel"
+          ? "Hotel booking failed."
+          : "Flight booking failed."
+      );
     }
   };
 
@@ -288,7 +302,7 @@ const CheckoutPage = () => {
             color="primary"
             size="large"
             onClick={handleSubmit}
-            disabled={isAutoLoading}
+            disabled={isAutoLoading || isFlightLoading}
             sx={{
               px: 6,
               py: 1.5,
@@ -299,7 +313,9 @@ const CheckoutPage = () => {
               textTransform: "none",
             }}
           >
-            {isAutoLoading ? "Booking..." : "✅ Confirm & Book"}
+            {isAutoLoading || isFlightLoading
+              ? "Booking..."
+              : "✅ Confirm & Book"}
           </Button>
         </Box>
       </Paper>

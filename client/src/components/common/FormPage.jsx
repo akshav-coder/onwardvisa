@@ -502,23 +502,11 @@ const FormPage = () => {
         };
         navigate("/checkout", { state: { bookingType: "hotel", payload } });
         return;
-      } else {
-        // Normal flight or both logic
+      } else if (bookingType === "flight" || bookingType === "both") {
+        // Navigate to checkout for flight or both
         const payload = { ...formData, type: bookingType, tripType };
-        try {
-          const pdfBlob = await submitTicketForm(payload).unwrap();
-          const url = window.URL.createObjectURL(pdfBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "ticket.pdf";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          window.URL.revokeObjectURL(url);
-          alert("Booking submitted successfully!");
-        } catch (error) {
-          alert("Booking submission failed. Please try again.");
-        }
+        navigate("/checkout", { state: { bookingType, payload } });
+        return;
       }
     } else {
       console.log("Form has validation errors.");
