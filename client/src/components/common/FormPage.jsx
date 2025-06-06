@@ -542,7 +542,7 @@ const FormPage = () => {
     e.preventDefault();
     if (validateForm()) {
       if (bookingType === "hotel") {
-        // Instead of auto-booking here, navigate to checkout with payload
+        // Only send hotel fields
         const payload = {
           place: formData.destinationCountry,
           adults: formData.adults,
@@ -551,10 +551,71 @@ const FormPage = () => {
         };
         navigate("/checkout", { state: { bookingType: "hotel", payload } });
         return;
-      } else if (bookingType === "flight" || bookingType === "both") {
-        // Navigate to checkout for flight or both
-        const payload = { ...formData, type: bookingType, tripType };
+      } else if (bookingType === "flight") {
+        let payload = {};
+        if (tripType === "multicity") {
+          payload = {
+            multiCity: formData.multiCity,
+            travelers: formData.travelers,
+          };
+        } else if (tripType === "roundtrip") {
+          payload = {
+            from: formData.from,
+            to: formData.to,
+            departureDate: formData.departureDate,
+            returnDate: formData.returnDate,
+            travelers: formData.travelers,
+          };
+        } else if (tripType === "oneway") {
+          payload = {
+            from: formData.from,
+            to: formData.to,
+            departureDate: formData.departureDate,
+            travelers: formData.travelers,
+          };
+        }
+        payload.type = bookingType;
+        payload.tripType = tripType;
         navigate("/checkout", { state: { bookingType, payload } });
+        return;
+      } else if (bookingType === "both") {
+        // Send both hotel and flight fields
+        let flightPayload = {};
+        if (tripType === "multicity") {
+          flightPayload = {
+            multiCity: formData.multiCity,
+            travelers: formData.travelers,
+          };
+        } else if (tripType === "roundtrip") {
+          flightPayload = {
+            from: formData.from,
+            to: formData.to,
+            departureDate: formData.departureDate,
+            returnDate: formData.returnDate,
+            travelers: formData.travelers,
+          };
+        } else if (tripType === "oneway") {
+          flightPayload = {
+            from: formData.from,
+            to: formData.to,
+            departureDate: formData.departureDate,
+            travelers: formData.travelers,
+          };
+        }
+        flightPayload.type = "flight";
+        flightPayload.tripType = tripType;
+        const hotelPayload = {
+          place: formData.destinationCountry,
+          adults: formData.adults,
+          checkInDate: formData.checkInDate,
+          checkOutDate: formData.checkOutDate,
+        };
+        navigate("/checkout", {
+          state: {
+            bookingType,
+            payload: { flight: flightPayload, hotel: hotelPayload },
+          },
+        });
         return;
       }
     } else {
