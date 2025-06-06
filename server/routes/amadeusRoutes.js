@@ -138,19 +138,30 @@ router.post("/auto-book", async (req, res) => {
         .json({ error: "No hotel offers found for any hotel in this city." });
     }
     // 4. Book the first available offer
+    const { guests, payment } = req.body;
     const bookingPayload = {
       data: {
         type: "hotel-order",
-        guests: [
-          {
-            tid: 1,
-            title: "MR",
-            firstName: "BOB",
-            lastName: "SMITH",
-            phone: "+33679278416",
-            email: "bob.smith@email.com",
-          },
-        ],
+        guests:
+          guests && guests.length > 0
+            ? guests.map((g, idx) => ({
+                tid: idx + 1,
+                title: g.title,
+                firstName: g.firstName,
+                lastName: g.lastName,
+                phone: g.phone,
+                email: g.email,
+              }))
+            : [
+                {
+                  tid: 1,
+                  title: "MR",
+                  firstName: "BOB",
+                  lastName: "SMITH",
+                  phone: "+33679278416",
+                  email: "bob.smith@email.com",
+                },
+              ],
         travelAgent: {
           contact: {
             email: "bob.smith@email.com",
@@ -158,25 +169,37 @@ router.post("/auto-book", async (req, res) => {
         },
         roomAssociations: [
           {
-            guestReferences: [
-              {
-                guestReference: "1",
-              },
-            ],
+            guestReferences:
+              guests && guests.length > 0
+                ? guests.map((_, idx) => ({ guestReference: String(idx + 1) }))
+                : [{ guestReference: "1" }],
             hotelOfferId: foundOffer.id,
           },
         ],
-        payment: {
-          method: "CREDIT_CARD",
-          paymentCard: {
-            paymentCardInfo: {
-              vendorCode: "VI",
-              cardNumber: "4151289722471370",
-              expiryDate: "2026-08",
-              holderName: "BOB SMITH",
-            },
-          },
-        },
+        payment:
+          payment && payment.cardNumber
+            ? {
+                method: "CREDIT_CARD",
+                paymentCard: {
+                  paymentCardInfo: {
+                    vendorCode: payment.vendorCode,
+                    cardNumber: payment.cardNumber,
+                    expiryDate: payment.expiryDate,
+                    holderName: payment.holderName,
+                  },
+                },
+              }
+            : {
+                method: "CREDIT_CARD",
+                paymentCard: {
+                  paymentCardInfo: {
+                    vendorCode: "VI",
+                    cardNumber: "4151289722471370",
+                    expiryDate: "2026-08",
+                    holderName: "BOB SMITH",
+                  },
+                },
+              },
       },
     };
     console.log("[AUTO-BOOK] Booking payload:", bookingPayload);

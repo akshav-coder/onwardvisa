@@ -252,6 +252,7 @@ const CheckoutPage = () => {
               helperText={errors.cardNumber}
               fullWidth
               size="small"
+              autoComplete="cc-number"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -263,6 +264,7 @@ const CheckoutPage = () => {
               error={!!errors.expiryDate}
               helperText={errors.expiryDate}
               fullWidth
+              autoComplete="cc-exp"
               size="small"
             />
           </Grid>
