@@ -26,7 +26,7 @@ const MainPage = () => {
       <VisaHelpCards />
       <Footer />
       {/* <SampleUI /> */}
-      <HotelSearch />
+      {/* <HotelSearch /> */}
     </div>
   );
 };

@@ -17,6 +17,7 @@ import {
   useAutoBookHotelMutation,
   useSearchCityQuery,
 } from "../../services/authApi";
+import { useNavigate } from "react-router-dom";
 
 // --- Animation Keyframes ---
 const animationDuration = "3s";
@@ -63,6 +64,279 @@ const buttonStyles = {
   px: 8,
 };
 
+// --- BookingTypeButtons Component ---
+const BookingTypeButtons = ({
+  bookingType,
+  handleBookingType,
+  buttonStyles,
+}) => (
+  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+    {["flight", "hotel", "both"].map((type) => (
+      <Button
+        key={type}
+        variant="contained"
+        disableElevation
+        sx={{
+          ...buttonStyles,
+          px: { xs: 2, sm: 8 },
+          width: { xs: "100%", sm: "auto" },
+          mb: { xs: 1, sm: 0 },
+          backgroundColor:
+            bookingType === type ? "#AEBEFF" : buttonStyles.backgroundColor,
+          color: bookingType === type ? "#0052cc" : buttonStyles.color,
+          "&:hover": {
+            color: "#0052cc",
+            backgroundColor:
+              bookingType === type ? "#AEBEFF" : buttonStyles.backgroundColor,
+          },
+        }}
+        startIcon={
+          type === "flight" ? (
+            <Flight />
+          ) : type === "hotel" ? (
+            <Hotel />
+          ) : (
+            <SyncAlt />
+          )
+        }
+        onClick={() => handleBookingType(type)}
+      >
+        {type.charAt(0).toUpperCase() + type.slice(1)}
+      </Button>
+    ))}
+  </Stack>
+);
+
+// --- FlightBookingForm Component ---
+const FlightBookingForm = ({
+  tripType,
+  tabIndex,
+  handleTabChange,
+  formData,
+  handleChange,
+  errors,
+  handleMultiCityChange,
+  addCity,
+}) => (
+  <>
+    <Tabs
+      value={tabIndex}
+      onChange={handleTabChange}
+      sx={{ mb: 2 }}
+      variant="scrollable"
+      scrollButtons="auto"
+    >
+      <Tab label="Round Trip" />
+      <Tab label="One Way" />
+      <Tab label="Multi City" />
+    </Tabs>
+
+    <Typography variant="h6" mt={3} gutterBottom>
+      Flight Booking
+    </Typography>
+
+    {tripType === "multicity" ? (
+      <>
+        {formData.multiCity.map((leg, i) => (
+          <Box
+            key={i}
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 2,
+              mb: 2,
+            }}
+          >
+            <TextField
+              label="From"
+              value={leg.from}
+              onChange={(e) => handleMultiCityChange(i, "from", e.target.value)}
+              fullWidth
+              error={!!errors[`multiCity[${i}].from`]}
+              helperText={errors[`multiCity[${i}].from`]}
+            />
+            <TextField
+              label="To"
+              value={leg.to}
+              onChange={(e) => handleMultiCityChange(i, "to", e.target.value)}
+              fullWidth
+              error={!!errors[`multiCity[${i}].to`]}
+              helperText={errors[`multiCity[${i}].to`]}
+            />
+            <TextField
+              type="date"
+              label="Date"
+              InputLabelProps={{ shrink: true }}
+              value={leg.date}
+              onChange={(e) => handleMultiCityChange(i, "date", e.target.value)}
+              fullWidth
+              error={!!errors[`multiCity[${i}].date`]}
+              helperText={errors[`multiCity[${i}].date`]}
+            />
+          </Box>
+        ))}
+        <Button variant="outlined" onClick={addCity}>
+          Add City
+        </Button>
+      </>
+    ) : (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+          mb: 2,
+          alignItems: "center",
+        }}
+      >
+        <TextField
+          label="From"
+          name="from"
+          value={formData.from}
+          onChange={handleChange}
+          fullWidth
+          error={!!errors.from}
+          helperText={errors.from}
+        />
+        <TextField
+          label="To"
+          name="to"
+          value={formData.to}
+          onChange={handleChange}
+          fullWidth
+          error={!!errors.to}
+          helperText={errors.to}
+        />
+        <TextField
+          label="Departure Date"
+          type="date"
+          name="departureDate"
+          InputLabelProps={{ shrink: true }}
+          value={formData.departureDate}
+          onChange={handleChange}
+          fullWidth
+          error={!!errors.departureDate}
+          helperText={errors.departureDate}
+        />
+        {tripType === "roundtrip" && (
+          <TextField
+            label="Return Date"
+            type="date"
+            name="returnDate"
+            InputLabelProps={{ shrink: true }}
+            value={formData.returnDate}
+            onChange={handleChange}
+            fullWidth
+            error={!!errors.returnDate}
+            helperText={errors.returnDate}
+          />
+        )}
+        <TextField
+          label="Travelers"
+          type="number"
+          name="travelers"
+          value={formData.travelers}
+          onChange={handleChange}
+          inputProps={{ min: 1 }}
+          fullWidth
+          error={!!errors.travelers}
+          helperText={errors.travelers}
+        />
+      </Box>
+    )}
+  </>
+);
+
+// --- HotelBookingForm Component ---
+const HotelBookingForm = ({
+  cityOptions,
+  selectedCity,
+  setCityInput,
+  setSelectedCity,
+  setFormData,
+  formData,
+  errors,
+  setErrors,
+  handleChange,
+}) => (
+  <>
+    <Typography variant="h6" mt={4} gutterBottom>
+      Hotel Booking
+    </Typography>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
+        gap: 2,
+        alignItems: { sm: "center" },
+        mb: 2,
+      }}
+    >
+      <Autocomplete
+        options={cityOptions}
+        value={selectedCity}
+        onInputChange={(e, val) => setCityInput(val)}
+        onChange={(e, val) => {
+          setSelectedCity(val);
+          setFormData((prev) => ({
+            ...prev,
+            destinationCountry: val?.code || "",
+          }));
+          if (errors.destinationCountry) {
+            setErrors((prev) => ({
+              ...prev,
+              destinationCountry: "",
+            }));
+          }
+        }}
+        getOptionLabel={(option) => option.label || ""}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Destination City"
+            fullWidth
+            error={!!errors.destinationCountry}
+            helperText={errors.destinationCountry}
+          />
+        )}
+      />
+      <TextField
+        label="Check In"
+        type="date"
+        name="checkInDate"
+        value={formData.checkInDate}
+        onChange={handleChange}
+        InputLabelProps={{ shrink: true }}
+        fullWidth
+        error={!!errors.checkInDate}
+        helperText={errors.checkInDate}
+      />
+      <TextField
+        label="Check Out"
+        type="date"
+        name="checkOutDate"
+        value={formData.checkOutDate}
+        onChange={handleChange}
+        InputLabelProps={{ shrink: true }}
+        fullWidth
+        error={!!errors.checkOutDate}
+        helperText={errors.checkOutDate}
+      />
+      <TextField
+        label="Adults"
+        type="number"
+        name="adults"
+        value={formData.adults}
+        onChange={handleChange}
+        inputProps={{ min: 1 }}
+        fullWidth
+        error={!!errors.adults}
+        helperText={errors.adults}
+      />
+    </Box>
+  </>
+);
+
 // --- Main Component ---
 const FormPage = () => {
   const [cityInput, setCityInput] = useState("");
@@ -78,6 +352,7 @@ const FormPage = () => {
   const fullText = "Minutes";
   const [autoBookHotel, { isAutoLoading, data, error }] =
     useAutoBookHotelMutation();
+  const navigate = useNavigate();
 
   const { data: cityData } = useSearchCityQuery(cityInput, {
     skip: !cityInput,
@@ -218,19 +493,15 @@ const FormPage = () => {
     e.preventDefault();
     if (validateForm()) {
       if (bookingType === "hotel") {
-        try {
-          const response = await autoBookHotel({
-            place: formData.destinationCountry, // assuming destinationCountry is cityCode
-            adults: formData.adults,
-            checkInDate: formData.checkInDate,
-            checkOutDate: formData.checkOutDate,
-          }).unwrap();
-          alert(
-            `Hotel booked successfully! Booking ID: ${response?.id || "N/A"}`
-          );
-        } catch (err) {
-          alert(err?.data?.error || "Auto-booking hotel failed.");
-        }
+        // Instead of auto-booking here, navigate to checkout with payload
+        const payload = {
+          place: formData.destinationCountry,
+          adults: formData.adults,
+          checkInDate: formData.checkInDate,
+          checkOutDate: formData.checkOutDate,
+        };
+        navigate("/checkout", { state: { bookingType: "hotel", payload } });
+        return;
       } else {
         // Normal flight or both logic
         const payload = { ...formData, type: bookingType, tripType };
@@ -400,46 +671,11 @@ const FormPage = () => {
           }}
         >
           {/* Booking Type Buttons */}
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            {["flight", "hotel", "both"].map((type) => (
-              <Button
-                key={type}
-                variant="contained"
-                disableElevation
-                sx={{
-                  ...buttonStyles,
-                  px: { xs: 2, sm: 8 },
-                  width: { xs: "100%", sm: "auto" },
-                  mb: { xs: 1, sm: 0 },
-                  backgroundColor:
-                    bookingType === type
-                      ? "#AEBEFF"
-                      : buttonStyles.backgroundColor,
-                  color: bookingType === type ? "#0052cc" : buttonStyles.color,
-                  "&:hover": {
-                    color: "#0052cc",
-                    backgroundColor:
-                      bookingType === type
-                        ? "#AEBEFF"
-                        : buttonStyles.backgroundColor,
-                  },
-                }}
-                startIcon={
-                  type === "flight" ? (
-                    <Flight />
-                  ) : type === "hotel" ? (
-                    <Hotel />
-                  ) : (
-                    <SyncAlt />
-                  )
-                }
-                onClick={() => handleBookingType(type)}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
-          </Stack>
-
+          <BookingTypeButtons
+            bookingType={bookingType}
+            handleBookingType={handleBookingType}
+            buttonStyles={buttonStyles}
+          />
           {/* Form Content */}
           <Box
             sx={{
@@ -454,221 +690,30 @@ const FormPage = () => {
           >
             <form onSubmit={handleSubmit}>
               {(bookingType === "flight" || bookingType === "both") && (
-                <>
-                  <Tabs
-                    value={tabIndex}
-                    onChange={handleTabChange}
-                    sx={{ mb: 2 }}
-                    variant="scrollable"
-                    scrollButtons="auto"
-                  >
-                    <Tab label="Round Trip" />
-                    <Tab label="One Way" />
-                    <Tab label="Multi City" />
-                  </Tabs>
-
-                  <Typography variant="h6" mt={3} gutterBottom>
-                    Flight Booking
-                  </Typography>
-
-                  {tripType === "multicity" ? (
-                    <>
-                      {formData.multiCity.map((leg, i) => (
-                        <Box
-                          key={i}
-                          sx={{
-                            display: "flex",
-                            flexDirection: { xs: "column", sm: "row" },
-                            gap: 2,
-                            mb: 2,
-                          }}
-                        >
-                          <TextField
-                            label="From"
-                            value={leg.from}
-                            onChange={(e) =>
-                              handleMultiCityChange(i, "from", e.target.value)
-                            }
-                            fullWidth
-                            error={!!errors[`multiCity[${i}].from`]}
-                            helperText={errors[`multiCity[${i}].from`]}
-                          />
-                          <TextField
-                            label="To"
-                            value={leg.to}
-                            onChange={(e) =>
-                              handleMultiCityChange(i, "to", e.target.value)
-                            }
-                            fullWidth
-                            error={!!errors[`multiCity[${i}].to`]}
-                            helperText={errors[`multiCity[${i}].to`]}
-                          />
-                          <TextField
-                            type="date"
-                            label="Date"
-                            InputLabelProps={{ shrink: true }}
-                            value={leg.date}
-                            onChange={(e) =>
-                              handleMultiCityChange(i, "date", e.target.value)
-                            }
-                            fullWidth
-                            error={!!errors[`multiCity[${i}].date`]}
-                            helperText={errors[`multiCity[${i}].date`]}
-                          />
-                        </Box>
-                      ))}
-                      <Button variant="outlined" onClick={addCity}>
-                        Add City
-                      </Button>
-                    </>
-                  ) : (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
-                        gap: 2,
-                        mb: 2,
-                        alignItems: "center",
-                      }}
-                    >
-                      <TextField
-                        label="From"
-                        name="from"
-                        value={formData.from}
-                        onChange={handleChange}
-                        fullWidth
-                        error={!!errors.from}
-                        helperText={errors.from}
-                      />
-                      <TextField
-                        label="To"
-                        name="to"
-                        value={formData.to}
-                        onChange={handleChange}
-                        fullWidth
-                        error={!!errors.to}
-                        helperText={errors.to}
-                      />
-                      <TextField
-                        label="Departure Date"
-                        type="date"
-                        name="departureDate"
-                        InputLabelProps={{ shrink: true }}
-                        value={formData.departureDate}
-                        onChange={handleChange}
-                        fullWidth
-                        error={!!errors.departureDate}
-                        helperText={errors.departureDate}
-                      />
-                      {tripType === "roundtrip" && (
-                        <TextField
-                          label="Return Date"
-                          type="date"
-                          name="returnDate"
-                          InputLabelProps={{ shrink: true }}
-                          value={formData.returnDate}
-                          onChange={handleChange}
-                          fullWidth
-                          error={!!errors.returnDate}
-                          helperText={errors.returnDate}
-                        />
-                      )}
-                      <TextField
-                        label="Travelers"
-                        type="number"
-                        name="travelers"
-                        value={formData.travelers}
-                        onChange={handleChange}
-                        inputProps={{ min: 1 }}
-                        fullWidth
-                        error={!!errors.travelers}
-                        helperText={errors.travelers}
-                      />
-                    </Box>
-                  )}
-                </>
+                <FlightBookingForm
+                  tripType={tripType}
+                  tabIndex={tabIndex}
+                  handleTabChange={handleTabChange}
+                  formData={formData}
+                  handleChange={handleChange}
+                  errors={errors}
+                  handleMultiCityChange={handleMultiCityChange}
+                  addCity={addCity}
+                />
               )}
-
               {(bookingType === "hotel" || bookingType === "both") && (
-                <>
-                  <Typography variant="h6" mt={4} gutterBottom>
-                    Hotel Booking
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: { xs: "column", sm: "row" },
-                      gap: 2,
-                      alignItems: { sm: "center" },
-                      mb: 2,
-                    }}
-                  >
-                    <Autocomplete
-                      options={cityOptions}
-                      value={selectedCity}
-                      onInputChange={(e, val) => setCityInput(val)}
-                      onChange={(e, val) => {
-                        setSelectedCity(val);
-                        setFormData((prev) => ({
-                          ...prev,
-                          destinationCountry: val?.code || "", // Save cityCode
-                        }));
-                        if (errors.destinationCountry) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            destinationCountry: "",
-                          }));
-                        }
-                      }}
-                      getOptionLabel={(option) => option.label || ""}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Destination City"
-                          fullWidth
-                          error={!!errors.destinationCountry}
-                          helperText={errors.destinationCountry}
-                        />
-                      )}
-                    />
-
-                    <TextField
-                      label="Check In"
-                      type="date"
-                      name="checkInDate"
-                      value={formData.checkInDate}
-                      onChange={handleChange}
-                      InputLabelProps={{ shrink: true }}
-                      fullWidth
-                      error={!!errors.checkInDate}
-                      helperText={errors.checkInDate}
-                    />
-                    <TextField
-                      label="Check Out"
-                      type="date"
-                      name="checkOutDate"
-                      value={formData.checkOutDate}
-                      onChange={handleChange}
-                      InputLabelProps={{ shrink: true }}
-                      fullWidth
-                      error={!!errors.checkOutDate}
-                      helperText={errors.checkOutDate}
-                    />
-                    <TextField
-                      label="Adults"
-                      type="number"
-                      name="adults"
-                      value={formData.adults}
-                      onChange={handleChange}
-                      inputProps={{ min: 1 }}
-                      fullWidth
-                      error={!!errors.adults}
-                      helperText={errors.adults}
-                    />
-                  </Box>
-                </>
+                <HotelBookingForm
+                  cityOptions={cityOptions}
+                  selectedCity={selectedCity}
+                  setCityInput={setCityInput}
+                  setSelectedCity={setSelectedCity}
+                  setFormData={setFormData}
+                  formData={formData}
+                  errors={errors}
+                  setErrors={setErrors}
+                  handleChange={handleChange}
+                />
               )}
-
               <Box
                 sx={{
                   display: "flex",
@@ -691,7 +736,7 @@ const FormPage = () => {
                   }}
                   color="primary"
                   size="large"
-                  disabled={isLoading} // Disable button while submitting
+                  disabled={isLoading}
                 >
                   {isLoading ? "Submitting..." : "Continue to checkout"}
                 </Button>
