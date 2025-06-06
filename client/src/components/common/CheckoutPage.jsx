@@ -14,6 +14,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AddCircle, RemoveCircle } from "@mui/icons-material";
 import { useAutoBookHotelMutation } from "../../services/authApi";
 import { useSubmitTicketFormMutation } from "../../services/apiSlice";
+import { useSnackbar } from "./SnackbarProvider";
 
 const CheckoutPage = () => {
   const location = useLocation();
@@ -43,6 +44,7 @@ const CheckoutPage = () => {
     useAutoBookHotelMutation();
   const [submitTicketForm, { isLoading: isFlightLoading }] =
     useSubmitTicketFormMutation();
+  const showSnackbar = useSnackbar();
 
   const handleGuestChange = (index, e) => {
     const { name, value } = e.target;
@@ -107,18 +109,19 @@ const CheckoutPage = () => {
     try {
       if (bookingType === "hotel") {
         await autoBookHotel(payload).unwrap();
-        alert("Hotel booked successfully!");
+        showSnackbar("Hotel booked successfully!", "success");
         navigate("/");
       } else if (bookingType === "flight" || bookingType === "both") {
         await submitTicketForm(payload).unwrap();
-        alert("Flight booked successfully!");
+        showSnackbar("Flight booked successfully!", "success");
         navigate("/");
       }
     } catch (err) {
-      alert(
+      showSnackbar(
         bookingType === "hotel"
           ? "Hotel booking failed."
-          : "Flight booking failed."
+          : "Flight booking failed.",
+        "error"
       );
     }
   };

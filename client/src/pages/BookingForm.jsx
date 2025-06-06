@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./BookingForm.css";
 import { useSubmitFormMutation } from "../services/authApi";
+import { useSnackbar } from "../components/common/SnackbarProvider";
 
 const BookingForm = () => {
   const [bookingType, setBookingType] = useState("flight");
@@ -21,6 +22,7 @@ const BookingForm = () => {
   });
 
   const [submitForm, { isLoading }] = useSubmitFormMutation();
+  const showSnackbar = useSnackbar();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,11 +56,11 @@ const BookingForm = () => {
     try {
       const response = await submitForm(payload).unwrap(); // unwrap gets the actual response
       console.log("Form submitted successfully:", response);
-      alert("Booking submitted successfully!");
+      showSnackbar("Booking submitted successfully!", "success");
       // Optionally, reset form or redirect user here
     } catch (error) {
       console.error("Submission failed:", error);
-      alert("Booking submission failed. Please try again.");
+      showSnackbar("Booking submission failed. Please try again.", "error");
     }
   };
 
