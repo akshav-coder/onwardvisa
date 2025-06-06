@@ -11,6 +11,7 @@ import "../styles/MainPage.css";
 import FormPage from "../components/common/FormPage";
 import SampleUI from "../components/common/SampleUI";
 import HotelSearch from "../components/common/HotelSearch";
+import PricingSection from "../components/common/PricingSection";
 
 const MainPage = () => {
   return (
@@ -19,6 +20,7 @@ const MainPage = () => {
         <Header />
         <FormPage />
       </div>
+      <PricingSection />
       <TrustBadge />
       <HowItWorks />
       <OnwardVisasFeatures />
