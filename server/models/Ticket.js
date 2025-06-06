@@ -34,6 +34,9 @@ const ticketSchema = new mongoose.Schema({
 
   // Hotel Details
   hotelName: String,
+  checkInDate: String,
+  checkOutDate: String,
+  adults: Number,
 
   // Common
   destinationCountry: String,
