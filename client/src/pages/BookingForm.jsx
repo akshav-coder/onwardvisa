@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./BookingForm.css";
 import { useSubmitFormMutation } from "../services/authApi";
-import { useSnackbar } from "../components/common/SnackbarProvider";
+import { useSnackbar } from "../hooks/useSnackbar";
 
 const BookingForm = () => {
   const [bookingType, setBookingType] = useState("flight");
