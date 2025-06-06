@@ -25,6 +25,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import DisclaimerDialog from "./DisclaimerDialog";
 
 dayjs.extend(isSameOrBefore);
 
@@ -854,22 +855,11 @@ const FormPage = () => {
                 >
                   {isLoading ? "Submitting..." : "Continue to checkout"}
                 </Button>
-                <Dialog open={dialogOpen} onClose={handleDialogClose}>
-                  <DialogTitle>Site Under Development</DialogTitle>
-                  <DialogContent>
-                    <DialogContentText>
-                      This service is currently under development and not
-                      intended for public use. Some features may not work as
-                      expected.
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleDialogClose}>Cancel</Button>
-                    <Button onClick={handleDialogConfirm} variant="contained">
-                      Proceed
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+                <DisclaimerDialog
+                  open={dialogOpen}
+                  onClose={handleDialogClose}
+                  onConfirm={handleDialogConfirm}
+                />
               </Box>
             </form>
           </Box>
