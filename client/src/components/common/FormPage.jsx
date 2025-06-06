@@ -8,6 +8,11 @@ import {
   TextField,
   Typography,
   Autocomplete,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import { Flight, Hotel, SyncAlt } from "@mui/icons-material";
 import { keyframes } from "@emotion/react";
@@ -367,6 +372,7 @@ const FormPage = () => {
     "translateX(-50%) translateY(0)"
   );
   const [typedText, setTypedText] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const fullText = "Minutes";
   const [autoBookHotel, { isAutoLoading, data, error }] =
     useAutoBookHotelMutation();
@@ -635,6 +641,13 @@ const FormPage = () => {
     }
   };
 
+  const handleDialogOpen = () => setDialogOpen(true);
+  const handleDialogClose = () => setDialogOpen(false);
+  const handleDialogConfirm = () => {
+    handleSubmit({ preventDefault: () => {} });
+    setDialogOpen(false);
+  };
+
   useEffect(() => {
     let current = 0;
     let forward = true;
@@ -827,7 +840,7 @@ const FormPage = () => {
                 }}
               >
                 <Button
-                  type="submit"
+                  type="button"
                   variant="contained"
                   sx={{
                     px: { xs: 2, sm: 6 },
@@ -837,9 +850,26 @@ const FormPage = () => {
                   color="primary"
                   size="large"
                   disabled={isLoading}
+                  onClick={handleDialogOpen}
                 >
                   {isLoading ? "Submitting..." : "Continue to checkout"}
                 </Button>
+                <Dialog open={dialogOpen} onClose={handleDialogClose}>
+                  <DialogTitle>Site Under Development</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      This service is currently under development and not
+                      intended for public use. Some features may not work as
+                      expected.
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleDialogClose}>Cancel</Button>
+                    <Button onClick={handleDialogConfirm} variant="contained">
+                      Proceed
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </Box>
             </form>
           </Box>
