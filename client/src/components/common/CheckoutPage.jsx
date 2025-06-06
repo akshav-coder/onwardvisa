@@ -108,11 +108,40 @@ const CheckoutPage = () => {
 
     try {
       if (bookingType === "hotel") {
-        await autoBookHotel(payload).unwrap();
+        const hotelRes = await autoBookHotel(payload).unwrap();
+        const pdfPayload = {
+          ...payload,
+          hotelName: hotelRes.bookedHotel.name,
+          type: "hotel",
+        };
+        const blob = await submitTicketForm(pdfPayload).unwrap();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ticket.pdf";
+        a.click();
+        window.URL.revokeObjectURL(url);
         showSnackbar("Hotel booked successfully!", "success");
-        navigate("/thank-you", { state: { info: payload } });
-      } else if (bookingType === "flight" || bookingType === "both") {
-        const blob = await submitTicketForm(payload).unwrap();
+        navigate("/thank-you", { state: { info: pdfPayload } });
+      } else if (bookingType === "both") {
+        const hotelRes = await autoBookHotel(payload).unwrap();
+        const pdfPayload = {
+          ...payload,
+          hotelName: hotelRes.bookedHotel.name,
+          type: "both",
+        };
+        const blob = await submitTicketForm(pdfPayload).unwrap();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ticket.pdf";
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showSnackbar("Booking completed successfully!", "success");
+        navigate("/thank-you", { state: { info: pdfPayload } });
+      } else if (bookingType === "flight") {
+        const pdfPayload = { ...payload, type: "flight" };
+        const blob = await submitTicketForm(pdfPayload).unwrap();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -120,7 +149,7 @@ const CheckoutPage = () => {
         a.click();
         window.URL.revokeObjectURL(url);
         showSnackbar("Flight booked successfully!", "success");
-        navigate("/thank-you", { state: { info: payload } });
+        navigate("/thank-you", { state: { info: pdfPayload } });
       }
     } catch (err) {
       showSnackbar(
