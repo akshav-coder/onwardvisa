@@ -32,13 +32,6 @@ const CheckoutPage = () => {
     },
   ]);
 
-  const [payment, setPayment] = useState({
-    vendorCode: "VI",
-    cardNumber: "",
-    expiryDate: "",
-    holderName: "",
-  });
-
   const [errors, setErrors] = useState({});
   const [autoBookHotel, { isLoading: isAutoLoading }] =
     useAutoBookHotelMutation();
@@ -72,11 +65,6 @@ const CheckoutPage = () => {
     setGuests((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handlePaymentChange = (e) => {
-    const { name, value } = e.target;
-    setPayment((prev) => ({ ...prev, [name]: value }));
-  };
-
   const validateForm = () => {
     const newErrors = {};
     guests.forEach((guest, idx) => {
@@ -87,10 +75,6 @@ const CheckoutPage = () => {
       if (!guest.phone) newErrors[`guest_${idx}_phone`] = "Phone required";
       if (!guest.email) newErrors[`guest_${idx}_email`] = "Email required";
     });
-
-    if (!payment.cardNumber) newErrors.cardNumber = "Card number required";
-    if (!payment.expiryDate) newErrors.expiryDate = "Expiry required";
-    if (!payment.holderName) newErrors.holderName = "Cardholder name required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -103,7 +87,6 @@ const CheckoutPage = () => {
     const payload = {
       ...bookingInfo,
       guests,
-      payment,
     };
 
     try {
@@ -275,65 +258,6 @@ const CheckoutPage = () => {
         </Box>
 
         <Divider sx={{ my: 4 }} />
-
-        <Typography variant="h6" fontWeight="bold" mb={2}>
-          💳 Payment Information
-        </Typography>
-
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              label="Card Type"
-              name="vendorCode"
-              value={payment.vendorCode}
-              onChange={handlePaymentChange}
-              fullWidth
-              size="small"
-            >
-              <MenuItem value="VI">Visa</MenuItem>
-              <MenuItem value="MC">MasterCard</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Card Number"
-              name="cardNumber"
-              value={payment.cardNumber}
-              onChange={handlePaymentChange}
-              error={!!errors.cardNumber}
-              helperText={errors.cardNumber}
-              fullWidth
-              size="small"
-              autoComplete="cc-number"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Expiry (YYYY-MM)"
-              name="expiryDate"
-              value={payment.expiryDate}
-              onChange={handlePaymentChange}
-              error={!!errors.expiryDate}
-              helperText={errors.expiryDate}
-              fullWidth
-              autoComplete="cc-exp"
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Cardholder Name"
-              name="holderName"
-              value={payment.holderName}
-              onChange={handlePaymentChange}
-              error={!!errors.holderName}
-              helperText={errors.holderName}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-        </Grid>
 
         <Box mt={5} textAlign="center">
           <Button
