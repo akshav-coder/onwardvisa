@@ -16,8 +16,9 @@ const MainPage = () => {
         <Header />
         <FormPage />
       </div>
-      <PricingSection />
       <TrustBadge />
+      <PricingSection />
+
       <HowItWorks />
       <OnwardVisasFeatures />
       <TestimonialSlider />

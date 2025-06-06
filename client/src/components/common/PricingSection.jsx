@@ -51,6 +51,22 @@ const plans = [
   },
 ];
 
+const ImportantNoteItem = ({ text }) => (
+  <ListItem sx={{ py: 1 }}>
+    <ListItemIcon>
+      <FlightTakeoffIcon color="primary" />
+    </ListItemIcon>
+    <ListItemText primary={text} />
+  </ListItem>
+);
+
+const importantNotes = [
+  "All documents are provided in downloadable format after order confirmation",
+  "These documents are intended for visa application purposes only",
+  "Not valid for check-in, boarding, or actual accommodation",
+  "For date change, contact support with your order ID",
+];
+
 const PricingSection = () => {
   return (
     <Box sx={{ py: 6, px: 3, maxWidth: "1200px", mx: "auto" }}>
@@ -69,47 +85,54 @@ const PricingSection = () => {
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                p: 2,
+                backgroundColor: "transparent",
               }}
+              elevation={4}
             >
               <CardContent
                 sx={{
+                  px: 0,
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
                 }}
               >
-                <Typography variant="h6" gutterBottom>
-                  {plan.title}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  gutterBottom
-                  sx={{ minHeight: 48 }}
-                >
-                  {plan.subtitle}
-                </Typography>
-                <Typography variant="h5" sx={{ my: 2 }}>
-                  {plan.price}
-                </Typography>
+                <Box sx={{ px: 4 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {plan.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                    sx={{ minHeight: 48 }}
+                  >
+                    {plan.subtitle}
+                  </Typography>
+                  <Typography variant="h5" sx={{ my: 2, textAlign: "center" }}>
+                    {plan.price}
+                  </Typography>
 
-                <Button variant={plan.buttonColor} fullWidth sx={{ mb: 2 }}>
-                  Book Now
-                </Button>
-                <List dense sx={{ mt: 0 }}>
-                  {plan.features.map((feature, i) => (
-                    <ListItem
-                      key={i}
-                      sx={{ px: 0, py: 0, alignItems: "flex-start" }}
-                    >
-                      <ListItemIcon sx={{ minWidth: 28, mt: "2px" }}>
-                        <CheckIcon color="success" fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText primary={feature} />
-                    </ListItem>
-                  ))}
-                </List>
+                  <Button variant={plan.buttonColor} fullWidth sx={{ mb: 2 }}>
+                    Book Now
+                  </Button>
+                </Box>
+                <Divider sx={{ my: 2 }} />
+                <Box sx={{ px: 4 }}>
+                  <List dense sx={{ mt: 0 }}>
+                    {plan.features.map((feature, i) => (
+                      <ListItem
+                        key={i}
+                        sx={{ px: 0, py: 1, alignItems: "flex-start" }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 28, mt: "2px" }}>
+                          <CheckIcon color="success" fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText primary={feature} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
@@ -122,30 +145,9 @@ const PricingSection = () => {
           Important Note
         </Typography>
         <List dense>
-          <ListItem>
-            <ListItemIcon>
-              <FlightTakeoffIcon color="primary" />
-            </ListItemIcon>
-            <ListItemText primary="All documents are provided in downloadable format after order confirmation" />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <FlightTakeoffIcon color="primary" />
-            </ListItemIcon>
-            <ListItemText primary="These documents are intended for visa application purposes only" />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <FlightTakeoffIcon color="primary" />
-            </ListItemIcon>
-            <ListItemText primary="Not valid for check-in, boarding, or actual accommodation" />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <FlightTakeoffIcon color="primary" />
-            </ListItemIcon>
-            <ListItemText primary="For date change, contact support with your order ID" />
-          </ListItem>
+          {importantNotes.map((note, idx) => (
+            <ImportantNoteItem key={idx} text={note} />
+          ))}
         </List>
       </Box>
     </Box>

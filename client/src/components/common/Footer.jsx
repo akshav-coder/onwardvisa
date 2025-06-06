@@ -4,108 +4,78 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <Box sx={{ bgcolor: "#102781", color: "#fff" }}>
+    <Box
+      sx={{
+        bgcolor: "#fff",
+        color: "#333",
+        pt: 8,
+        pb: 4,
+        position: "relative",
+      }}
+    >
+      {/* Centered Slogan */}
+      <Typography
+        variant="h5"
+        align="center"
+        sx={{ fontWeight: 500, fontSize: { xs: 18, sm: 22, md: 24 }, mb: 6 }}
+      >
+        Visas Made Simple. Journeys Made Possible.
+      </Typography>
+
+      {/* Centered Links */}
+      <Stack
+        direction="row"
+        spacing={4}
+        justifyContent="center"
+        alignItems="center"
+        sx={{ flexWrap: "wrap", mb: 4 }}
+      >
+        {[
+          "Privacy Policy",
+          "Refund Policy",
+          "Terms & Condition",
+          "Contact support",
+        ].map((text, i) => (
+          <Link
+            key={i}
+            href="#"
+            underline="hover"
+            color="inherit"
+            sx={{ fontSize: { xs: 14, md: 16 } }}
+          >
+            {text}
+          </Link>
+        ))}
+      </Stack>
+
       <Stack
         direction={{ xs: "column", md: "row" }}
-        spacing={2}
+        spacing={4}
         justifyContent="space-between"
-        alignItems={{ xs: "flex-start", md: "center" }}
-        sx={{
-          px: { xs: 2, sm: 4, md: 10 },
-          pt: { xs: 4, md: 10 },
-          gap: { xs: 4, md: 0 },
-        }}
+        alignItems="center"
+        sx={{ px: { xs: 2, md: 8 }, mb: 2, mt: 15 }}
       >
-        <Box sx={{ color: "#fff", mb: { xs: 2, md: 0 } }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 500,
-              mb: 1,
-              fontSize: { xs: 22, sm: 28, md: 32 },
-            }}
-          >
-            Visas Made Simple
-          </Typography>
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 500, fontSize: { xs: 22, sm: 28, md: 32 } }}
-          >
-            Journeys Made Possible.
-          </Typography>
-        </Box>
+        {/* Bottom section */}
+        <Typography variant="body2" align="center" sx={{ fontSize: 14 }}>
+          © 2025 onwardvisa. All rights reserved
+        </Typography>
+
+        {/* Back to Top Button - Bottom Right */}
         <Box
           sx={{
+            right: { xs: 16, md: 40 },
+            bottom: 16,
             display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            color: "#fff",
-            underline: "hover",
-            alignItems: { xs: "flex-start", md: "flex-end" },
+            alignItems: "center",
+            gap: 1,
           }}
         >
-          <Link
-            href="#"
-            color="inherit"
-            underline="hover"
-            sx={{ fontSize: { xs: 14, md: 16 } }}
-          >
-            Privacy Policy
-          </Link>
-          <Link
-            href="#"
-            color="inherit"
-            underline="hover"
-            sx={{ fontSize: { xs: 14, md: 16 } }}
-          >
-            Refund Policy
-          </Link>
-          <Link
-            href="#"
-            color="inherit"
-            underline="hover"
-            sx={{ fontSize: { xs: 14, md: 16 } }}
-          >
-            Terms & Condition
-          </Link>
-          <Link
-            href="#"
-            color="inherit"
-            underline="hover"
-            sx={{ fontSize: { xs: 14, md: 16 } }}
-          >
-            Contact support
-          </Link>
-        </Box>
-      </Stack>
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={2}
-        justifyContent="space-between"
-        alignItems={{ xs: "flex-start", md: "center" }}
-        sx={{
-          mt: { xs: 3, md: 5 },
-          p: { xs: 2, md: 3 },
-          borderTop: "1px solid #fff",
-          gap: { xs: 2, md: 0 },
-        }}
-      >
-        <Typography variant="body2" sx={{ fontSize: { xs: 12, md: 14 } }}>
-          @ 2025 onwardvisa. All rights reserved
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography sx={{ fontSize: { xs: 13, md: 16 } }}>
-            Go Back to top
-          </Typography>
+          <Typography sx={{ fontSize: 14 }}>Go Back to top</Typography>
           <IconButton
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            sx={{
-              color: "#fff",
-              border: "1px solid #fff",
-              p: { xs: 0.5, md: 1 },
-            }}
+            sx={{ border: "1px solid #333", color: "#333", p: 0.5 }}
           >
-            <ArrowUpward />
+            <ArrowUpward fontSize="small" />
           </IconButton>
         </Box>
       </Stack>
