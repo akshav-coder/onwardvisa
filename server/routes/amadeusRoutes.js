@@ -88,10 +88,10 @@ router.post("/booking", async (req, res) => {
 router.post("/auto-book", async (req, res) => {
   try {
     console.log("[AUTO-BOOK] Incoming body:", req.body);
-    const { place, adults, checkInDate, checkOutDate } = req.body;
+    const { place } = req.body;
     const cityCode = place;
     console.log("[AUTO-BOOK] Using cityCode:", cityCode);
-    // 2. List hotels in the city
+    // List hotels in the city
     const hotelsList = await amadeus.referenceData.locations.hotels.byCity.get({
       cityCode,
     });
@@ -99,115 +99,9 @@ router.post("/auto-book", async (req, res) => {
       console.log("[AUTO-BOOK] No hotels found for city:", cityCode);
       return res.status(404).json({ error: "No hotels found for this city." });
     }
-    let foundOffer = null;
-    let foundHotelId = null;
-    for (const hotel of hotelsList.data) {
-      try {
-        console.log(`[AUTO-BOOK] Trying hotelId: ${hotel.hotelId}`);
-        const pricingResponse = await amadeus.shopping.hotelOffersSearch.get({
-          hotelIds: hotel.hotelId,
-          adults,
-          checkInDate,
-          checkOutDate,
-        });
-        if (
-          pricingResponse.data &&
-          pricingResponse.data.length > 0 &&
-          pricingResponse.data[0].offers &&
-          pricingResponse.data[0].offers.length > 0
-        ) {
-          foundOffer = pricingResponse.data[0].offers[0];
-          foundHotelId = hotel.hotelId;
-          break;
-        }
-      } catch (err) {
-        // Log and continue to next hotel
-        console.log(
-          `[AUTO-BOOK] No offers for hotelId: ${hotel.hotelId}`,
-          err?.description || err?.message || err
-        );
-      }
-    }
-    if (!foundOffer) {
-      console.log(
-        "[AUTO-BOOK] No hotel offers found for any hotel in city:",
-        cityCode
-      );
-      return res
-        .status(404)
-        .json({ error: "No hotel offers found for any hotel in this city." });
-    }
-    // 4. Book the first available offer
-    const { guests, payment } = req.body;
-    const bookingPayload = {
-      data: {
-        type: "hotel-order",
-        guests:
-          guests && guests.length > 0
-            ? guests.map((g, idx) => ({
-                tid: idx + 1,
-                title: g.title,
-                firstName: g.firstName,
-                lastName: g.lastName,
-                phone: g.phone,
-                email: g.email,
-              }))
-            : [
-                {
-                  tid: 1,
-                  title: "MR",
-                  firstName: "BOB",
-                  lastName: "SMITH",
-                  phone: "+33679278416",
-                  email: "bob.smith@email.com",
-                },
-              ],
-        travelAgent: {
-          contact: {
-            email: "bob.smith@email.com",
-          },
-        },
-        roomAssociations: [
-          {
-            guestReferences:
-              guests && guests.length > 0
-                ? guests.map((_, idx) => ({ guestReference: String(idx + 1) }))
-                : [{ guestReference: "1" }],
-            hotelOfferId: foundOffer.id,
-          },
-        ],
-        payment:
-          payment && payment.cardNumber
-            ? {
-                method: "CREDIT_CARD",
-                paymentCard: {
-                  paymentCardInfo: {
-                    vendorCode: payment.vendorCode,
-                    cardNumber: payment.cardNumber,
-                    expiryDate: payment.expiryDate,
-                    holderName: payment.holderName,
-                  },
-                },
-              }
-            : {
-                method: "CREDIT_CARD",
-                paymentCard: {
-                  paymentCardInfo: {
-                    vendorCode: "VI",
-                    cardNumber: "4151289722471370",
-                    expiryDate: "2026-08",
-                    holderName: "BOB SMITH",
-                  },
-                },
-              },
-      },
-    };
-    console.log("[AUTO-BOOK] Booking payload:", bookingPayload);
-    const bookingResponse = await amadeus.booking.hotelOrders.post(
-      bookingPayload
-    );
-    console.log("[AUTO-BOOK] Booking response:", bookingResponse);
-    res.json(JSON.parse(bookingResponse.body));
+    // Take the first hotel and return as booked
+    const bookedHotel = hotelsList.data[0];
+    res.json({ bookedHotel });
   } catch (err) {
     console.error("[AUTO-BOOK] Error:", err);
     res.status(500).json({ error: err.message, stack: err.stack });

@@ -19,6 +19,9 @@ import {
 } from "../../services/authApi";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+
+dayjs.extend(isSameOrBefore);
 
 // --- Animation Keyframes ---
 const animationDuration = "3s";
