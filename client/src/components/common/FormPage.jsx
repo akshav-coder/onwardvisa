@@ -7,11 +7,16 @@ import {
   Tab,
   TextField,
   Typography,
+  Autocomplete,
 } from "@mui/material";
 import { Flight, Hotel, SyncAlt } from "@mui/icons-material";
 import { keyframes } from "@emotion/react";
 import { useSubmitTicketFormMutation } from "../../services/apiSlice";
 import flightImage from "../../assets/flight.png";
+import {
+  useAutoBookHotelMutation,
+  useSearchCityQuery,
+} from "../../services/authApi";
 
 // --- Animation Keyframes ---
 const animationDuration = "3s";
@@ -60,7 +65,9 @@ const buttonStyles = {
 
 // --- Main Component ---
 const FormPage = () => {
+  const [cityInput, setCityInput] = useState("");
   const [bookingType, setBookingType] = useState("flight");
+  const [selectedCity, setSelectedCity] = useState(null);
   const [tripType, setTripType] = useState("roundtrip");
   const [tabIndex, setTabIndex] = useState(0);
   const [animationActive, setAnimationActive] = useState(false);
@@ -69,6 +76,18 @@ const FormPage = () => {
   );
   const [typedText, setTypedText] = useState("");
   const fullText = "Minutes";
+  const [autoBookHotel, { isAutoLoading, data, error }] =
+    useAutoBookHotelMutation();
+
+  const { data: cityData } = useSearchCityQuery(cityInput, {
+    skip: !cityInput,
+  });
+
+  const cityOptions =
+    cityData?.data?.map((item) => ({
+      label: item.address.cityName,
+      code: item.address.cityCode,
+    })) || [];
 
   const [formData, setFormData] = useState({
     from: "",
@@ -79,6 +98,9 @@ const FormPage = () => {
     multiCity: [{ from: "", to: "", date: "" }],
     hotelName: "",
     destinationCountry: "",
+    checkInDate: "",
+    checkOutDate: "",
+    adults: 1,
   });
 
   const [errors, setErrors] = useState({}); // New state for validation errors
@@ -170,8 +192,16 @@ const FormPage = () => {
     }
 
     if (bookingType === "hotel" || bookingType === "both") {
-      if (!formData.hotelName) {
-        newErrors.hotelName = "Hotel Name is required";
+      if (!formData.checkInDate) {
+        newErrors.checkInDate = "Check-in Date is required";
+        isValid = false;
+      }
+      if (!formData.checkOutDate) {
+        newErrors.checkOutDate = "Check-out Date is required";
+        isValid = false;
+      }
+      if (formData.adults < 1) {
+        newErrors.adults = "At least 1 adult required";
         isValid = false;
       }
       if (!formData.destinationCountry) {
@@ -187,20 +217,37 @@ const FormPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      const payload = { ...formData, type: bookingType, tripType };
-      try {
-        const pdfBlob = await submitTicketForm(payload).unwrap();
-        const url = window.URL.createObjectURL(pdfBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "ticket.pdf";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-        alert("Booking submitted successfully!"); // Success message
-      } catch (error) {
-        alert("Booking submission failed. Please try again.");
+      if (bookingType === "hotel") {
+        try {
+          const response = await autoBookHotel({
+            place: formData.destinationCountry, // assuming destinationCountry is cityCode
+            adults: formData.adults,
+            checkInDate: formData.checkInDate,
+            checkOutDate: formData.checkOutDate,
+          }).unwrap();
+          alert(
+            `Hotel booked successfully! Booking ID: ${response?.id || "N/A"}`
+          );
+        } catch (err) {
+          alert(err?.data?.error || "Auto-booking hotel failed.");
+        }
+      } else {
+        // Normal flight or both logic
+        const payload = { ...formData, type: bookingType, tripType };
+        try {
+          const pdfBlob = await submitTicketForm(payload).unwrap();
+          const url = window.URL.createObjectURL(pdfBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "ticket.pdf";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+          alert("Booking submitted successfully!");
+        } catch (error) {
+          alert("Booking submission failed. Please try again.");
+        }
       }
     } else {
       console.log("Form has validation errors.");
@@ -556,23 +603,67 @@ const FormPage = () => {
                       mb: 2,
                     }}
                   >
+                    <Autocomplete
+                      options={cityOptions}
+                      value={selectedCity}
+                      onInputChange={(e, val) => setCityInput(val)}
+                      onChange={(e, val) => {
+                        setSelectedCity(val);
+                        setFormData((prev) => ({
+                          ...prev,
+                          destinationCountry: val?.code || "", // Save cityCode
+                        }));
+                        if (errors.destinationCountry) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            destinationCountry: "",
+                          }));
+                        }
+                      }}
+                      getOptionLabel={(option) => option.label || ""}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Destination City"
+                          fullWidth
+                          error={!!errors.destinationCountry}
+                          helperText={errors.destinationCountry}
+                        />
+                      )}
+                    />
+
                     <TextField
-                      label="Hotel Name"
-                      name="hotelName"
-                      value={formData.hotelName}
+                      label="Check In"
+                      type="date"
+                      name="checkInDate"
+                      value={formData.checkInDate}
                       onChange={handleChange}
+                      InputLabelProps={{ shrink: true }}
                       fullWidth
-                      error={!!errors.hotelName}
-                      helperText={errors.hotelName}
+                      error={!!errors.checkInDate}
+                      helperText={errors.checkInDate}
                     />
                     <TextField
-                      label="Destination Country"
-                      name="destinationCountry"
-                      value={formData.destinationCountry}
+                      label="Check Out"
+                      type="date"
+                      name="checkOutDate"
+                      value={formData.checkOutDate}
                       onChange={handleChange}
+                      InputLabelProps={{ shrink: true }}
                       fullWidth
-                      error={!!errors.destinationCountry}
-                      helperText={errors.destinationCountry}
+                      error={!!errors.checkOutDate}
+                      helperText={errors.checkOutDate}
+                    />
+                    <TextField
+                      label="Adults"
+                      type="number"
+                      name="adults"
+                      value={formData.adults}
+                      onChange={handleChange}
+                      inputProps={{ min: 1 }}
+                      fullWidth
+                      error={!!errors.adults}
+                      helperText={errors.adults}
                     />
                   </Box>
                 </>
