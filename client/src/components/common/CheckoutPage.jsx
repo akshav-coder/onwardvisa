@@ -14,7 +14,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AddCircle, RemoveCircle } from "@mui/icons-material";
 import { useAutoBookHotelMutation } from "../../services/authApi";
 import { useSubmitTicketFormMutation } from "../../services/apiSlice";
-import { useSnackbar } from "./SnackbarProvider";
+import { useSnackbar } from "../../hooks/useSnackbar";
 
 const CheckoutPage = () => {
   const location = useLocation();

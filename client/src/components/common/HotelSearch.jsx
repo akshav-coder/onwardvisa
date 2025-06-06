@@ -19,7 +19,7 @@ import {
   useBookHotelMutation,
   useAutoBookHotelMutation,
 } from "../../services/authApi";
-import { useSnackbar } from "./SnackbarProvider";
+import { useSnackbar } from "../../hooks/useSnackbar";
 
 const HotelSearch = () => {
   const [cityInput, setCityInput] = useState("");
