@@ -33,19 +33,23 @@ const Footer = () => {
         {[
           "Privacy Policy",
           "Refund Policy",
-          "Terms & Condition",
+          { text: "Terms & Condition", href: "/terms-condition" },
           "Contact support",
-        ].map((text, i) => (
-          <Link
-            key={i}
-            href="#"
-            underline="hover"
-            color="inherit"
-            sx={{ fontSize: { xs: 14, md: 16 } }}
-          >
-            {text}
-          </Link>
-        ))}
+        ].map((item, i) => {
+          const text = typeof item === "string" ? item : item.text;
+          const href = typeof item === "string" ? "#" : item.href;
+          return (
+            <Link
+              key={i}
+              href={href}
+              underline="hover"
+              color="inherit"
+              sx={{ fontSize: { xs: 14, md: 16 } }}
+            >
+              {text}
+            </Link>
+          );
+        })}
       </Stack>
 
       <Stack
